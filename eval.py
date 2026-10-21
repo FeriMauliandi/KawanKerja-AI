@@ -1,19 +1,19 @@
 import os
 import sys
-from langchain_google_genai import ChatGoogleGenerativeAI
+from dotenv import load_dotenv
 import pandas as pd
 from datasets import Dataset
 
-# Memastikan Python membaca folder 'src'
 root_dir = os.path.abspath(os.path.dirname(__file__))
-sys.path.append(root_dir)
+if root_dir not in sys.path:
+    sys.path.append(root_dir)
 
-# Import model lokal milikmu
+load_dotenv()
+
+from langchain_groq import ChatGroq
 from src.ingestion.embedder import get_embedding_model
-from src.retrieval.vector_store import get_vector_store
-from langchain_ollama import ChatOllama
+from src.generation.chain import create_rag_chain
 
-# Import RAGAS metrics & evaluator
 from ragas import evaluate
 from ragas.metrics import (
     faithfulness,
@@ -22,20 +22,45 @@ from ragas.metrics import (
     context_recall,
 )
 
-def build_evaluation_dataset():
-    embedder = get_embedding_model()
-    vs = get_vector_store(embedding_model=embedder)
-    
-    test_questions = [
-        "apa saja klasifikasi ikan lele",
-        "ikan lele berasal dari mana dan kapan masuk ke Indonesia"
-    ]
-    
-    ground_truths = [
-        "Kingdom: Animalia, Sub-kingdom: Metazoa, Filum: Chordata, Sub Filum: Vertebrata, Kelas: Pisces, Sub Kelas: Teleostei, Ordo: Ostariophysi, Sub Ordo: Siluroidea, Famili: Clariidae, Genus: Clarias, Spesies: Clarias sp.",
-        "Ikan  lele  adalah  salah  satu  ikan  yang  berasal  dari  Taiwan  dan  pertama  kali masuk  ke  Indonesia  pada  tahun  1985  melalui  sebuh  perusahaan  swasta  di  Jakarta"
-    ]
+EVALUATION_QUESTIONS = [
+    {
+        "question": "Berapa lama batas maksimal waktu kerja lembur dalam 1 hari dan 1 minggu menurut PP 35 Tahun 2021?",
+        "ground_truth": "Berdasarkan Pasal 26 ayat (1) PP 35/2021, waktu kerja lembur hanya dapat dilakukan paling banyak 4 jam dalam 1 hari dan 18 jam dalam 1 minggu, tidak termasuk kerja lembur pada waktu istirahat mingguan atau hari libur resmi."
+    },
+    {
+        "question": "Apakah pekerja dengan Perjanjian Kerja Waktu Tertentu (PKWT) berhak mendapatkan uang kompensasi saat kontrak berakhir?",
+        "ground_truth": "Ya, pengusaha wajib memberikan uang kompensasi kepada pekerja PKWT yang memiliki masa kerja minimal 1 bulan secara terus-menerus saat berakhirnya jangka waktu PKWT sesuai ketentuan Pasal 15 ayat (1) dan ayat (2) PP 35/2021."
+    },
+    {
+        "question": "Bagaimana perhitungan uang kompensasi untuk pekerja PKWT yang telah bekerja selama 12 bulan terus menerus?",
+        "ground_truth": "Berdasarkan Pasal 16 ayat (1) huruf a PP 35/2021, pekerja PKWT yang mempunyai masa kerja selama 12 bulan secara terus-menerus diberikan uang kompensasi sebesar 1 bulan upah."
+    },
+    {
+        "question": "Berapa batas jangka waktu maksimal keseluruhan kontrak PKWT berdasarkan PP 35 Tahun 2021?",
+        "ground_truth": "Berdasarkan Pasal 8 ayat (1) PP 35/2021, PKWT berdasarkan jangka waktu dapat dibuat paling lama 5 tahun, dan jika dilakukan perpanjangan maka total keseluruhan jangka waktu beserta perpanjangannya tidak boleh melebihi 5 tahun."
+    },
+    {
+        "question": "Apakah perusahaan alih daya (outsourcing) wajib berbadan hukum perseroan terbatas?",
+        "ground_truth": "Ya, berdasarkan Pasal 19 PP 35/2021, perusahaan alih daya harus berbentuk badan hukum perseroan terbatas dan wajib memenuhi perizinan berusaha yang diterbitkan oleh pemerintah pusat."
+    },
+    {
+        "question": "Berapa besaran uang pesangon untuk pekerja dengan masa kerja 3 tahun tetapi kurang dari 4 tahun jika terjadi PHK?",
+        "ground_truth": "Berdasarkan Pasal 40 ayat (2) huruf d PP 35/2021, pekerja dengan masa kerja 3 tahun atau lebih tetapi kurang dari 4 tahun berhak atas uang pesangon sebesar 4 bulan upah."
+    },
+    {
+        "question": "Berapa pesangon dan UPMK bagi pekerja yang di-PHK karena perusahaan melakukan efisiensi akibat kerugian?",
+        "ground_truth": "Berdasarkan Pasal 43 ayat (2) PP 35/2021, pekerja berhak atas uang pesangon sebesar 0,5 kali ketentuan Pasal 40 ayat (2), UPMK sebesar 1 kali ketentuan Pasal 40 ayat (3), dan UPH sesuai Pasal 40 ayat (4)."
+    },
+    {
+        "question": "Berapa takaran pakan harian untuk budidaya pembesaran ikan lele?",
+        "ground_truth": "Informasi mengenai takaran pakan ikan lele tidak terdapat dalam dokumen regulasi ketenagakerjaan PP No. 35 Tahun 2021."
+    }
+]
 
+def build_evaluation_dataset():
+    print("Menyiapkan Advanced RAG Pipeline (Groq Qwen 3.8 27B) untuk evaluasi...")
+    chain = create_rag_chain(return_docs=True)
+    
     data = {
         "question": [],
         "answer": [],
@@ -43,39 +68,37 @@ def build_evaluation_dataset():
         "ground_truth": []
     }
 
-    print("🤖 Menjalankan simulasi tanya jawab untuk evaluasi...")
-    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.2, api_key=os.getenv("GOOGLE_API_KEY")) 
+    print(f"Menjalankan simulasi {len(EVALUATION_QUESTIONS)} pertanyaan evaluasi...")
+    for idx, item in enumerate(EVALUATION_QUESTIONS, start=1):
+        q = item["question"]
+        gt = item["ground_truth"]
+        print(f"  [{idx}/{len(EVALUATION_QUESTIONS)}] Pertanyaan: {q[:60]}...")
+        
+        result = chain.invoke(q)
+        answer = result["answer"]
+        contexts = [s["snippet"] for s in result.get("sources", [])]
+        
+        data["question"].append(q)
+        data["answer"].append(answer)
+        data["contexts"].append(contexts)
+        data["ground_truth"].append(gt)
 
-    for i, question in enumerate(test_questions):
-        # A. Proses Retrieval
-        results = vs.similarity_search(question, k=3)
-        contexts_list = [doc.page_content for doc in results]
-        konteks_gabungan = "\n\n".join(contexts_list)
-        
-        # B. Proses Generation
-        prompt = f"Berdasarkan teks ini:\n{konteks_gabungan}\n\nJawab pertanyaan: {question}"
-        jawaban_llm = llm.invoke(prompt).content
-        
-        # C. Simpan ke format RAGAS
-        data["question"].append(question)
-        data["contexts"].append(contexts_list) # RAGAS butuh format list of strings
-        data["answer"].append(jawaban_llm)
-        data["ground_truth"].append(ground_truths[i])
-        
-    # Ubah menjadi HuggingFace Dataset
     return Dataset.from_dict(data)
 
 def run_evaluation():
-    print("📊 Menyiapkan Dataset Evaluasi...")
+    print("Memulai Evaluasi RAGAS untuk KawanKerja AI...")
     dataset = build_evaluation_dataset()
     
-    # RAGAS membutuhkan akses ke LLM dan Embedder untuk menjadi "Juri"
-    juri_llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.2, api_key=os.getenv("GOOGLE_API_KEY")) 
+    groq_api_key = os.getenv("GROQ_API_KEY")
+    juri_llm = ChatGroq(model_name="qwen/qwen3.8-27b", temperature=0.0, groq_api_key=groq_api_key)
     juri_embedder = get_embedding_model()
 
-    print("\n⚖️ Memulai Penilaian RAGAS (Ini akan memakan waktu karena LLM bekerja keras sebagai juri)...")
+    print("\nMemulai penilaian otomatis metrik RAGAS:")
+    print("- Faithfulness (Anti-Halusinasi)")
+    print("- Answer Relevancy")
+    print("- Context Precision (Relevansi Retriever)")
+    print("- Context Recall (Kelengkapan Konteks)")
     
-    # Eksekusi RAGAS
     result = evaluate(
         dataset=dataset,
         metrics=[
@@ -89,20 +112,18 @@ def run_evaluation():
     )
     
     print("\n" + "="*50)
-    print("🏆 HASIL EVALUASI RAGAS (Skor 0.0 - 1.0)")
+    print("HASIL EVALUASI RAGAS (Skor 0.0 - 1.0)")
     print("="*50)
     
-    # Ubah hasil ke Pandas DataFrame agar rapi
     df_hasil = result.to_pandas()
+    print(f"Faithfulness       : {df_hasil['faithfulness'].mean():.4f}")
+    print(f"Answer Relevancy   : {df_hasil['answer_relevancy'].mean():.4f}")
+    print(f"Context Precision  : {df_hasil['context_precision'].mean():.4f}")
+    print(f"Context Recall     : {df_hasil['context_recall'].mean():.4f}")
     
-    # Menampilkan rata-rata skor
-    print(f"Faithfulness (Anti-Halusinasi) : {df_hasil['faithfulness'].mean():.4f}")
-    print(f"Answer Relevancy               : {df_hasil['answer_relevancy'].mean():.4f}")
-    print(f"Context Precision              : {df_hasil['context_precision'].mean():.4f}")
-    print(f"Context Recall                 : {df_hasil['context_recall'].mean():.4f}")
-    
-    print("\nDetail per pertanyaan disimpan ke 'eval_report.csv'")
-    df_hasil.to_csv("eval_report.csv", index=False)
+    output_csv = "eval_report.csv"
+    df_hasil.to_csv(output_csv, index=False)
+    print(f"\nLaporan lengkap per pertanyaan disimpan ke '{output_csv}'")
 
 if __name__ == "__main__":
     run_evaluation()

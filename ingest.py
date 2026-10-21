@@ -9,14 +9,12 @@ from src.ingestion.embedder import get_embedding_model
 from src.retrieval.vector_store import get_vector_store
 
 SOURCES = [
-    "data/budidayalele.pdf",
-    "data/budidayalele2.pdf",
-    "https://www.cimbniaga.co.id/id/inspirasi/bisnis/budidaya-ikan-lele",
-    "https://diskan.pamekasankab.go.id/berita/2020/03/02/mari-mengenal-teknik-budidaya-lele-tingkat-dasar/"
+    "data/PP_No_35_Tahun_2021.pdf",
+    "data/Penjelasan_PP_No_35_Tahun_2021.pdf"
 ]
 
 def run_ingestion_pipeline():
-    print("Memulai Data Ingestion Pipeline\n")
+    print("Memulai Data Ingestion Pipeline untuk Regulasi Ketenagakerjaan (PP 35/2021)\n")
     all_chunks = []
     
     for source in SOURCES:
@@ -32,7 +30,7 @@ def run_ingestion_pipeline():
         print(f"\nMenyiapkan model embedding dan menyimpan {len(all_chunks)} chunks ke ChromaDB.")
         embedder = get_embedding_model()
         get_vector_store(chunks=all_chunks, embedding_model=embedder)
-        print("\nSelesai! Semua data telah masuk ke database dan siap digunakan oleh Streamlit.")
+        print("\nSelesai! Semua data regulasi telah masuk ke database dan siap digunakan.")
     else:
         print("\nTidak ada data yang berhasil diproses.")
 

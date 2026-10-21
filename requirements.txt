@@ -3,6 +3,7 @@ fastapi
 uvicorn[standard]
 python-dotenv
 pydantic
+requests
 pandas
 datasets
 ragas
@@ -12,9 +13,9 @@ langchain-core
 langchain-community
 langchain-classic
 langchain-chroma
+langchain-groq
 langchain-google-genai
 langchain-huggingface
-langchain-ollama
 chromadb
 pypdf
 beautifulsoup4
