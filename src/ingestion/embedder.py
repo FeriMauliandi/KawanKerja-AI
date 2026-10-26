@@ -1,12 +1,10 @@
 from langchain_huggingface import HuggingFaceEmbeddings
-import torch
+from src.config import EMBEDDING_MODEL_NAME, get_device
 
-model_name = "Qwen/Qwen3-Embedding-0.6B"
-
-def get_embedding_model(model_name: str = model_name):
+def get_embedding_model(model_name: str = EMBEDDING_MODEL_NAME):
     print(f"Mempersiapkan model embedding: {model_name}")
     
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = get_device()
     print(f"Hardware yang digunakan untuk embedding: {device.upper()}")
     
     embeddings = HuggingFaceEmbeddings(
@@ -20,7 +18,7 @@ def get_embedding_model(model_name: str = model_name):
 
 # =======Blok testing=========
 if __name__ == "__main__":
-    embedder = get_embedding_model(model_name)
+    embedder = get_embedding_model()
     
     teks_uji = "Mengubah teks menjadi angka agar dipahami oleh mesin."
     vektor = embedder.embed_query(teks_uji)

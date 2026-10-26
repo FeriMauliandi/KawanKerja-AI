@@ -80,11 +80,18 @@ flowchart TD
 
 ```text
 ├── backend/
-│   └── api.py                    # FastAPI application & REST endpoints
+│   ├── api.py                    # FastAPI application & REST endpoints
+│   └── schemas.py                # Pydantic Request & Response DTO Schemas
+├── frontend/
+│   └── app.py                    # Antarmuka Chat Streamlit
+├── scripts/
+│   ├── ingest.py                 # Offline vector database indexing CLI
+│   └── eval.py                   # Skrip evaluasi benchmark kuantitatif RAGAS
 ├── data/
 │   ├── PP_No_35_Tahun_2021.pdf   # Batang Tubuh regulasi resmi
 │   └── Penjelasan_PP_No_35_...pdf# Penjelasan resmi pasal demi pasal
 ├── src/
+│   ├── config.py                 # Konfigurasi terpusat, device detection & paths
 │   ├── ingestion/
 │   │   ├── loader.py             # Multi-format document loader (PDF, MD, Web)
 │   │   ├── chunker.py            # Text splitting & chunking logic
@@ -96,13 +103,12 @@ flowchart TD
 │       ├── prompt.py             # Prompt engineering dengan legal guardrails
 │       └── chain.py              # LangChain RAG Chain (Groq Qwen 3.8 27B)
 ├── tests/
-│   └── test_static_project.py    # Automated unit tests
+│   ├── test_api.py               # Unit & integration tests untuk API
+│   └── test_static_project.py    # Automated structural & guardrail tests
 ├── .github/workflows/
 │   └── ci-cd.yml                 # GitHub Actions CI/CD
+├── pyproject.toml                # Standard Python package & pytest configuration
 ├── Dockerfile                    # Containerization
-├── app.py                        # Antarmuka Chat Streamlit
-├── eval.py                       # Skrip evaluasi RAGAS benchmark
-├── ingest.py                     # Offline vector database indexing CLI
 └── requirements.txt              # Production dependencies
 ```
 
@@ -144,7 +150,7 @@ LANGSMITH_PROJECT=kawankerja-ai
 ### 3. Eksekusi Data Ingestion
 
 ```bash
-python ingest.py
+python scripts/ingest.py
 ```
 
 ### 4. Menjalankan Aplikasi
@@ -159,7 +165,7 @@ Akses dokumentasi Swagger UI pada `http://localhost:8000/docs`.
 
 **Terminal 2 (Frontend Streamlit Client):**
 ```bash
-streamlit run app.py
+streamlit run frontend/app.py
 ```
 Akses di browser pada `http://localhost:8501`. Streamlit akan otomatis mendeteksi status backend dan berkomunikasi via REST API (`POST /api/chat`).
 

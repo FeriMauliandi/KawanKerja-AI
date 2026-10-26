@@ -1,36 +1,25 @@
-import os
-import sys
-from dotenv import load_dotenv
-
-root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
-if root_dir not in sys.path:
-    sys.path.append(root_dir)
-
-import torch
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.cross_encoders import HuggingFaceCrossEncoder
 from langchain_classic.retrievers.document_compressors import CrossEncoderReranker
 from langchain_chroma import Chroma
 from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers import EnsembleRetriever, ContextualCompressionRetriever, MultiQueryRetriever
 from langchain_core.documents import Document
+
+from src.config import CHROMA_DB_DIR, RERANKER_MODEL_NAME, get_reranker_device
 from src.ingestion.embedder import get_embedding_model
 
-def get_advanced_retriever(llm, search_type="similarity", final_k=3, fetch_k=5):
+
+def get_advanced_retriever(llm, search_type="similarity", final_k=3, fetch_k=5, persist_directory=None):
     print("Menyiapkan Advanced Retriever (MultiQuery + Hybrid + Reranker)...")
     
-    # Deteksi VRAM: Reranker menggunakan CPU jika VRAM GPU < 6GB untuk mencegah CUDA OOM
-    reranker_device = "cpu"
-    if torch.cuda.is_available():
-        vram_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3)
-        if vram_gb >= 6.0:
-            reranker_device = "cuda"
-        torch.cuda.empty_cache()
-    
+    if persist_directory is None:
+        persist_directory = str(CHROMA_DB_DIR)
+
+    reranker_device = get_reranker_device()
     print(f"Hardware untuk Cross-Encoder Reranker: {reranker_device.upper()}")
     
     embeddings = get_embedding_model()
-    vector_store = Chroma(persist_directory="chroma_db", embedding_function=embeddings)
+    vector_store = Chroma(persist_directory=persist_directory, embedding_function=embeddings)
     
     db_data = vector_store.get()
     num_docs = len(db_data.get('documents', [])) if db_data else 0
@@ -61,7 +50,7 @@ def get_advanced_retriever(llm, search_type="similarity", final_k=3, fetch_k=5):
     else:
         multi_query_retriever = MultiQueryRetriever.from_llm(retriever=base_retriever, llm=llm)
     
-    cross_encoder = HuggingFaceCrossEncoder(model_name="BAAI/bge-reranker-v2-m3", model_kwargs={"device": reranker_device})
+    cross_encoder = HuggingFaceCrossEncoder(model_name=RERANKER_MODEL_NAME, model_kwargs={"device": reranker_device})
     compressor = CrossEncoderReranker(model=cross_encoder, top_n=safe_final_k)
     
     final_retriever = ContextualCompressionRetriever(

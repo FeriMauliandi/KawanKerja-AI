@@ -37,7 +37,7 @@ jobs:
           python -m pip install -r requirements-dev.txt
 
       - name: Compile Python files
-        run: python -m compileall app.py ingest.py eval.py backend src tests
+        run: python -m compileall backend src tests frontend scripts
 
       - name: Run tests
         run: python -m pytest -q

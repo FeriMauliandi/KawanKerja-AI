@@ -6,13 +6,17 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_required_entrypoints_exist():
     expected_files = [
-        "app.py",
-        "ingest.py",
+        "frontend/app.py",
+        "scripts/ingest.py",
+        "scripts/eval.py",
         "backend/api.py",
+        "backend/schemas.py",
+        "src/config.py",
         "src/generation/chain.py",
         "src/generation/prompt.py",
         "src/retrieval/retriever.py",
         "src/retrieval/vector_store.py",
+        "pyproject.toml",
     ]
 
     missing = [path for path in expected_files if not (ROOT / path).exists()]

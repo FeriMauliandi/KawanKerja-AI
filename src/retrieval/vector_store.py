@@ -1,11 +1,14 @@
 import os
-import sys
 from langchain_chroma import Chroma
+from src.config import CHROMA_DB_DIR
 
-def get_vector_store(chunks=None, embedding_model=None, persist_directory="./chroma_db"):
+def get_vector_store(chunks=None, embedding_model=None, persist_directory=None):
     """
     Menyimpan chunks ke dalam ChromaDB atau memuat database jika sudah ada.
     """
+    if persist_directory is None:
+        persist_directory = str(CHROMA_DB_DIR)
+
     if embedding_model is None:
         raise ValueError("Model embedding harus disertakan!")
 
@@ -17,7 +20,7 @@ def get_vector_store(chunks=None, embedding_model=None, persist_directory="./chr
         vector_store = Chroma.from_documents(
             documents=chunks,
             embedding=embedding_model,
-            persist_directory=persist_directory
+            persist_directory=str(persist_directory)
         )
         print("Data berhasil disimpan!")
         
@@ -28,7 +31,7 @@ def get_vector_store(chunks=None, embedding_model=None, persist_directory="./chr
             
         print("Memuat Vector Store yang sudah ada...")
         vector_store = Chroma(
-            persist_directory=persist_directory,
+            persist_directory=str(persist_directory),
             embedding_function=embedding_model
         )
         
@@ -38,10 +41,6 @@ def get_vector_store(chunks=None, embedding_model=None, persist_directory="./chr
 # Blok testing
 # ==========================================
 if __name__ == "__main__":
-
-    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
-    sys.path.append(root_dir)
-
     from src.ingestion.embedder import get_embedding_model
     from langchain_core.documents import Document
     

@@ -3,12 +3,21 @@ import os
 import sys
 import time
 import requests
+from pathlib import Path
+
+# Memastikan root project terdaftar di sys.path bila dijalankan via `streamlit run frontend/app.py`
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
+
+try:
+    from src.config import BACKEND_URL
+except ImportError:
+    BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000")
 
 # Konfigurasi UI Streamlit
 st.set_page_config(page_title="KawanKerja AI", page_icon="💼", layout="wide")
 
-# Konfigurasi URL Backend FastAPI
-BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000")
 
 def check_backend_health() -> bool:
     try:
@@ -16,6 +25,7 @@ def check_backend_health() -> bool:
         return resp.status_code == 200 and resp.json().get("model_loaded", False)
     except Exception:
         return False
+
 
 # Sidebar Informasi Arsitektur AI
 with st.sidebar:
@@ -76,6 +86,7 @@ for message in st.session_state.messages:
                     st.markdown(f"**Sumber**: `{s['source']}` (Halaman: **{s['page']}**)")
                     st.caption(f"_{s['snippet']}..._")
 
+
 def call_rest_api(question: str, history: list):
     payload = {
         "question": question,
@@ -86,14 +97,13 @@ def call_rest_api(question: str, history: list):
         raise RuntimeError(f"Backend API Error ({resp.status_code}): {resp.text}")
     return resp.json()
 
+
 @st.cache_resource
 def load_local_chain():
     # Fallback jika user memilih mode Embedded
-    root_dir = os.path.abspath(os.path.dirname(__file__))
-    if root_dir not in sys.path:
-        sys.path.append(root_dir)
     from src.generation.chain import create_rag_chain
     return create_rag_chain(return_docs=True)
+
 
 # Kolom input untuk user
 if prompt := st.chat_input("Tulis pertanyaan Anda seputar aturan kerja (contoh: Berapa batas maksimal waktu lembur dalam seminggu?)..."):

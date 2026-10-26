@@ -1,16 +1,9 @@
 import os
-import sys
-from dotenv import load_dotenv
 import pandas as pd
 from datasets import Dataset
-
-root_dir = os.path.abspath(os.path.dirname(__file__))
-if root_dir not in sys.path:
-    sys.path.append(root_dir)
-
-load_dotenv()
-
 from langchain_groq import ChatGroq
+
+from src.config import LLM_MODEL_NAME
 from src.ingestion.embedder import get_embedding_model
 from src.generation.chain import create_rag_chain
 
@@ -90,7 +83,7 @@ def run_evaluation():
     dataset = build_evaluation_dataset()
     
     groq_api_key = os.getenv("GROQ_API_KEY")
-    juri_llm = ChatGroq(model_name="qwen/qwen3.8-27b", temperature=0.0, groq_api_key=groq_api_key)
+    juri_llm = ChatGroq(model_name=LLM_MODEL_NAME, temperature=0.0, groq_api_key=groq_api_key)
     juri_embedder = get_embedding_model()
 
     print("\nMemulai penilaian otomatis metrik RAGAS:")

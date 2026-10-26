@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rag-chatbot"
+version = "0.1.0"
+description = "KawanKerja AI: Sistem RAG Regulasi Ketenagakerjaan Indonesia PP No. 35 Tahun 2021"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "streamlit",
+    "fastapi",
+    "uvicorn[standard]",
+    "python-dotenv",
+    "pydantic",
+    "requests",
+    "torch",
+    "langchain",
+    "langchain-core",
+    "langchain-community",
+    "langchain-classic",
+    "langchain-chroma",
+    "langchain-groq",
+    "langchain-huggingface",
+    "chromadb",
+    "pypdf",
+    "sentence-transformers",
+    "rank_bm25"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "httpx",
+    "ragas",
+    "datasets",
+    "pandas"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*", "backend*", "frontend*", "scripts*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

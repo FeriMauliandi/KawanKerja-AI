@@ -11,6 +11,7 @@ root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
 if root_dir not in sys.path:
     sys.path.append(root_dir)
 
+from src.config import LLM_MODEL_NAME, LLM_TEMPERATURE
 from src.ingestion.embedder import get_embedding_model
 from src.retrieval.vector_store import get_vector_store
 from src.retrieval.retriever import get_advanced_retriever
@@ -18,7 +19,7 @@ from src.generation.prompt import get_rag_prompt, get_contextualize_prompt
 
 load_dotenv()
 
-def get_groq_llm(model_name: str = "qwen/qwen3.8-27b", temperature: float = 0.2):
+def get_groq_llm(model_name: str = LLM_MODEL_NAME, temperature: float = LLM_TEMPERATURE):
     groq_api_key = os.getenv("GROQ_API_KEY")
     if not groq_api_key:
         raise ValueError("GROQ_API_KEY belum disetel di file .env!")

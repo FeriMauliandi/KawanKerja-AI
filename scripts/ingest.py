@@ -1,26 +1,22 @@
-import os
-import sys
-root_dir = os.path.abspath(os.path.dirname(__file__))
-sys.path.append(root_dir)
-
+from src.config import DEFAULT_SOURCES, CHUNK_SIZE, CHUNK_OVERLAP
 from src.ingestion.loader import load_data
 from src.ingestion.chunker import split_documents
 from src.ingestion.embedder import get_embedding_model
 from src.retrieval.vector_store import get_vector_store
 
-SOURCES = [
-    "data/PP_No_35_Tahun_2021.pdf",
-    "data/Penjelasan_PP_No_35_Tahun_2021.pdf"
-]
+SOURCES = DEFAULT_SOURCES
 
-def run_ingestion_pipeline():
+def run_ingestion_pipeline(sources=None):
+    if sources is None:
+        sources = DEFAULT_SOURCES
+
     print("Memulai Data Ingestion Pipeline untuk Regulasi Ketenagakerjaan (PP 35/2021)\n")
     all_chunks = []
     
-    for source in SOURCES:
+    for source in sources:
         try:
             raw_docs = load_data(source)
-            chunks = split_documents(raw_docs, chunk_size=1000, chunk_overlap=150)
+            chunks = split_documents(raw_docs, chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
             all_chunks.extend(chunks)
             print(f"Berhasil memproses: {source} ({len(chunks)} chunks)")
         except Exception as e:
