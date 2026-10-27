@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from typing import List, Any, Optional, Dict
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 
 # Memastikan Python bisa membaca folder root
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -54,7 +55,7 @@ async def root():
         "status": "online",
         "documentation": "/docs",
         "llm_provider": "Groq (qwen/qwen3.8-27b)",
-        "features": ["Hybrid Retrieval", "Cross-Encoder Reranker", "Multi-Turn Conversational Memory"],
+        "features": ["LCEL Pipeline", "Hybrid Retrieval", "Cross-Encoder Reranker", "Multi-Turn Conversational Memory"],
         "regulation_base": "PP No. 35 Tahun 2021"
     }
 
@@ -72,10 +73,21 @@ async def chat_with_rag(request: QueryRequest):
         raise HTTPException(status_code=503, detail="Model RAG belum siap di memori server.")
     
     try:
-        result = ml_models["rag_chain"].invoke({
+        chain = ml_models["rag_chain"]
+        payload = {
             "question": request.question,
             "chat_history": request.chat_history or []
-        })
+        }
+        
+        # Eksekusi non-blocking asinkron via LangChain ainvoke (dengan fallback ke invoke)
+        if hasattr(chain, "ainvoke"):
+            try:
+                result = await chain.ainvoke(payload)
+            except (TypeError, NotImplementedError):
+                result = chain.invoke(payload)
+        else:
+            result = chain.invoke(payload)
+
         return QueryResponse(
             answer=result["answer"],
             standalone_question=result.get("standalone_question"),
@@ -90,3 +102,28 @@ async def chat_with_rag(request: QueryRequest):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Terjadi kesalahan internal: {str(e)}")
+
+@app.post("/api/chat/stream")
+async def chat_stream_with_rag(request: QueryRequest):
+    """Endpoint streaming memanfaatkan kemampuan .astream() LCEL Runnable."""
+    if "rag_chain" not in ml_models:
+        raise HTTPException(status_code=503, detail="Model RAG belum siap di memori server.")
+    
+    chain = ml_models["rag_chain"]
+    payload = {
+        "question": request.question,
+        "chat_history": request.chat_history or []
+    }
+
+    async def generate_response():
+        if hasattr(chain, "astream"):
+            async for chunk in chain.astream(payload):
+                if isinstance(chunk, dict) and "answer" in chunk:
+                    yield chunk["answer"]
+                elif isinstance(chunk, str):
+                    yield chunk
+        else:
+            result = chain.invoke(payload)
+            yield result.get("answer", str(result))
+
+    return StreamingResponse(generate_response(), media_type="text/plain")
