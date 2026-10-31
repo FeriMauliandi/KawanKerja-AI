@@ -5,6 +5,7 @@ from typing import List, Any, Optional, Dict
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from fastapi.staticfiles import StaticFiles
 
 # Memastikan Python bisa membaca folder root
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -34,7 +35,7 @@ async def lifespan(app: FastAPI):
 # ======fastapi app initialization========
 app = FastAPI(
     title="KawanKerja AI Engine",
-    description="API Asisten Regulasi Ketenagakerjaan Indonesia (PP No. 35 Tahun 2021) bertenaga Groq & Qwen 3.8 27B",
+    description="API Asisten Regulasi Ketenagakerjaan Indonesia (PP No. 35 Tahun 2021) bertenaga Groq Qwen 3.8 27B, Gemini Embedding, dan NVIDIA Nemotron 3.5 Reranker",
     version="1.0.0",
     lifespan=lifespan
 )
@@ -47,6 +48,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount static modern web frontend
+frontend_dir = os.path.abspath(os.path.join(root_dir, "frontend"))
+if os.path.isdir(frontend_dir):
+    app.mount("/app", StaticFiles(directory=frontend_dir, html=True), name="frontend_app")
 
 @app.get("/")
 async def root():

@@ -1,0 +1,384 @@
+/* ==========================================================================
+   KawanKerja AI - Custom Stylesheet
+   Theme: Cyber Emerald & Multi-Spectrum Neon Palette
+   Palette Variables:
+   --text: #e0fff6;
+   --background: #00140f;
+   --primary: #04e797;
+   --secondary: #480297;
+   --accent: #a703b0;
+   Auxiliary Spectrum:
+   --cyan: #06b6d4;
+   --amber: #f59e0b;
+   --rose: #f43f5e;
+   --indigo: #6366f1;
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+    --text: #e0fff6;
+    --background: #00140f;
+    --primary: #04e797;
+    --secondary: #480297;
+    --accent: #a703b0;
+
+    --cyan: #06b6d4;
+    --amber: #f59e0b;
+    --rose: #f43f5e;
+    --indigo: #6366f1;
+
+    --surface: #022119;
+    --surface-light: #042e23;
+    --surface-glass: rgba(2, 33, 25, 0.82);
+    --border-glass: rgba(4, 231, 151, 0.22);
+    --border-accent: rgba(167, 3, 176, 0.35);
+
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* Base Viewport & Smooth Scroll */
+html {
+    scroll-behavior: smooth;
+    height: 100%;
+}
+
+body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: var(--background);
+    color: var(--text);
+    font-family: var(--font-sans);
+    letter-spacing: -0.01em;
+}
+
+section[id] {
+    scroll-margin-top: 5.5rem;
+}
+
+code, pre, .font-mono {
+    font-family: var(--font-mono);
+}
+
+/* Grounded Editorial Legal Background (No AI-slop gradient blobs) */
+.bg-cyber-glow, body {
+    background-color: #00140f;
+    background-image: 
+        linear-gradient(rgba(4, 231, 151, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(4, 231, 151, 0.025) 1px, transparent 1px);
+    background-size: 36px 36px;
+    background-position: center center;
+    background-attachment: fixed;
+}
+
+/* Legal Topic Animation Canvas — STRICTLY in Hero Section (Page 1) */
+#legal-hero-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.9;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(4, 231, 151, 0.3);
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(4, 231, 151, 0.6);
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Chat Messages Scroll Container */
+#chat-messages {
+    scroll-behavior: smooth;
+    scroll-padding-bottom: 14rem;
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+    background: rgba(2, 33, 25, 0.85);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(4, 231, 151, 0.2);
+}
+
+.glass-card {
+    background: rgba(2, 33, 25, 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(4, 231, 151, 0.2);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+    border-color: rgba(4, 231, 151, 0.55);
+    box-shadow: 0 10px 25px -5px rgba(4, 231, 151, 0.18);
+}
+
+/* Glowing Elements */
+.glow-primary {
+    box-shadow: 0 0 25px -5px rgba(4, 231, 151, 0.4);
+}
+
+.glow-cyan {
+    box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.4);
+}
+
+.glow-amber {
+    box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.4);
+}
+
+.glow-rose {
+    box-shadow: 0 0 25px -5px rgba(244, 63, 94, 0.4);
+}
+
+.glow-secondary {
+    box-shadow: 0 0 25px -5px rgba(72, 2, 151, 0.6);
+}
+
+.glow-accent {
+    box-shadow: 0 0 25px -5px rgba(167, 3, 176, 0.5);
+}
+
+/* Entrance Animations on Scroll */
+.reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(26px);
+    transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+}
+
+.reveal-on-scroll.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Stagger Delays */
+.delay-100 { transition-delay: 100ms; }
+.delay-150 { transition-delay: 150ms; }
+.delay-200 { transition-delay: 200ms; }
+.delay-300 { transition-delay: 300ms; }
+.delay-400 { transition-delay: 400ms; }
+
+/* Subtle Floating Animation */
+@keyframes float-subtle {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+.animate-float {
+    animation: float-subtle 4s ease-in-out infinite;
+}
+
+/* Shimmer Animation */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.skeleton-shimmer {
+    background: linear-gradient(90deg, rgba(4,231,151,0.04) 25%, rgba(6,182,212,0.12) 50%, rgba(4,231,151,0.04) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.6s infinite;
+}
+
+/* Pulse animation for active connection */
+@keyframes pulse-ring {
+    0% {
+        transform: scale(0.95);
+        opacity: 0.9;
+    }
+    50% {
+        transform: scale(1.35);
+        opacity: 0.2;
+    }
+    100% {
+        transform: scale(0.95);
+        opacity: 0.9;
+    }
+}
+
+.pulse-ring {
+    animation: pulse-ring 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Markdown prose rendering */
+.markdown-body {
+    line-height: 1.75;
+    font-size: 0.95rem;
+    color: #e0fff6;
+}
+
+.markdown-body p {
+    margin-bottom: 0.85rem;
+}
+
+.markdown-body p:last-child {
+    margin-bottom: 0;
+}
+
+.markdown-body strong {
+    font-weight: 700;
+    color: #04e797;
+}
+
+.markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4 {
+    font-weight: 700;
+    margin-top: 1.25rem;
+    margin-bottom: 0.65rem;
+    color: #38bdf8;
+    letter-spacing: -0.02em;
+}
+
+.markdown-body h1 {
+    font-size: 1.35rem;
+    border-bottom: 1px solid rgba(6, 182, 212, 0.25);
+    padding-bottom: 0.35rem;
+    color: #04e797;
+}
+
+.markdown-body h2 {
+    font-size: 1.2rem;
+    color: #38bdf8;
+}
+
+.markdown-body h3 {
+    font-size: 1.05rem;
+    color: #f59e0b;
+}
+
+.markdown-body ul, .markdown-body ol {
+    margin-bottom: 0.85rem;
+    padding-left: 1.35rem;
+}
+
+.markdown-body ul {
+    list-style-type: disc;
+}
+
+.markdown-body ol {
+    list-style-type: decimal;
+}
+
+.markdown-body li {
+    margin-bottom: 0.35rem;
+}
+
+.markdown-body blockquote {
+    border-left: 3px solid #04e797;
+    padding-left: 1rem;
+    margin: 0.9rem 0;
+    font-style: italic;
+    background: rgba(72, 2, 151, 0.25);
+    border-radius: 0 0.5rem 0.5rem 0;
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+    color: #e0fff6;
+}
+
+.markdown-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.875rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.markdown-body th, .markdown-body td {
+    padding: 0.6rem 0.85rem;
+    border: 1px solid rgba(4, 231, 151, 0.2);
+    text-align: left;
+}
+
+.markdown-body th {
+    background: rgba(4, 231, 151, 0.12);
+    font-weight: 600;
+    color: #04e797;
+}
+
+.markdown-body tr:nth-child(even) {
+    background: rgba(4, 231, 151, 0.04);
+}
+
+.markdown-body code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    padding: 0.15rem 0.35rem;
+    border-radius: 0.375rem;
+}
+
+.markdown-body pre {
+    background: #00140f;
+    color: #e0fff6;
+    padding: 0.85rem 1.15rem;
+    border-radius: 0.65rem;
+    overflow-x: auto;
+    margin: 0.9rem 0;
+    border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+.markdown-body pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+}
+
+/* Typing cursor animation */
+.typing-cursor::after {
+    content: "▋";
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 2px;
+    animation: blink 0.8s infinite;
+    color: #04e797;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+.chip-hover {
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chip-hover:hover {
+    transform: translateY(-2px);
+}

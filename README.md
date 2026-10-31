@@ -37,7 +37,7 @@ flowchart TD
     subgraph INGESTION["1. Pipeline Ingestion Dokumen"]
         PDF["Dokumen Resmi: PP No. 35/2021"] --> Loader["PyPDFLoader (Ekstraksi Halaman & Metadata)"]
         Loader --> Splitter["RecursiveCharacterTextSplitter (chunk: 1000, overlap: 150)"]
-        Splitter --> Embed["Qwen3-Embedding-0.6B (Normalized)"]
+        Splitter --> Embed["Gemini Embedding 1 (Google AI Studio)"]
         Embed --> Chroma[("ChromaDB Vector Store")]
     end
 
@@ -46,7 +46,7 @@ flowchart TD
         MultiQ --> BM25["Sparse Retriever (BM25)"]
         MultiQ --> Dense["Dense Retriever (ChromaDB)"]
         BM25 & Dense --> Ensemble["EnsembleRetriever (Hybrid Search 50:50)"]
-        Ensemble --> Rerank["Cross-Encoder Reranker (BAAI/bge-reranker-v2-m3)"]
+        Ensemble --> Rerank["Neural Reranker (NVIDIA Nemotron 3.5 Rerank 8B via OpenRouter)"]
         Rerank --> Context["Top-K Konteks Grounded + Sitasi Halaman"]
         Context --> PromptTemplate["Prompt Guardrail Hukum"]
         PromptTemplate --> LLM["Groq LPU: Qwen 3.8 27B"]
@@ -63,8 +63,8 @@ flowchart TD
 2. **Hybrid Retrieval (Sparse + Dense)**:
    - **BM25 Retriever** menangkap kata kunci istilah hukum yang presisi (contoh: *"PKWT"*, *"UPMK"*, *"Pasal 40"*).
    - **Dense ChromaDB Retriever** menangkap pemahaman makna semantik pertanyaan karyawan.
-3. **Cross-Encoder Re-ranking (`BAAI/bge-reranker-v2-m3`)**:
-   - Menyaring dan mengurutkan dokumen kandidat dengan analisis interaksi query-dokumen yang mendalam. Dilengkapi mekanisme alokasi hardware dinamis (CPU/GPU) untuk mencegah *out-of-memory*.
+3. **Neural Re-ranking (`NVIDIA Nemotron 3.5 Rerank 8B via OpenRouter`)**:
+   - Menyaring dan mengurutkan ulang dokumen kandidat dengan model reranker mutakhir NVIDIA Nemotron melalui OpenRouter API berkecepatan tinggi tanpa beban komputasi CPU lokal.
 4. **Query Expansion (`MultiQueryRetriever`)**:
    - Mengubah satu pertanyaan awam menjadi beberapa variasi sudut pandang hukum untuk memaksimalkan *recall*.
 5. **Sitasi & Grounding Transparan**:
@@ -95,10 +95,10 @@ flowchart TD
 │   ├── ingestion/
 │   │   ├── loader.py             # Multi-format document loader (PDF, MD, Web)
 │   │   ├── chunker.py            # Text splitting & chunking logic
-│   │   └── embedder.py           # Qwen3-Embedding-0.6B engine
+│   │   └── embedder.py           # Gemini Embedding (Google AI Studio)
 │   ├── retrieval/
 │   │   ├── vector_store.py       # ChromaDB abstraction
-│   │   └── retriever.py          # Hybrid (BM25 + Vector) + Cross-Encoder Reranker
+│   │   └── retriever.py          # Hybrid (BM25 + Vector) + Nemotron 3.5 Reranker (OpenRouter)
 │   └── generation/
 │       ├── prompt.py             # Prompt engineering dengan legal guardrails
 │       └── chain.py              # LangChain RAG Chain (Groq Qwen 3.8 27B)

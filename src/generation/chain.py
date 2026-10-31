@@ -116,7 +116,6 @@ def create_rag_chain(return_docs: bool = False, retriever=None, llm=None):
     rag_prompt = get_rag_prompt()
     contextualize_prompt = get_contextualize_prompt()
 
-    # LCEL Sub-chain untuk mereformulasi pertanyaan berdasarkan riwayat
     contextualize_chain = (
         contextualize_prompt
         | llm

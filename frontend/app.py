@@ -53,8 +53,8 @@ with st.sidebar:
     st.markdown("""
     - **Arsitektur**: Decoupled Client-Server (Streamlit -> FastAPI)
     - **LLM Generator**: `Qwen 3.8 27B` *(via Groq LPU)*
-    - **Embedding**: `Qwen/Qwen3-Embedding-0.6B`
-    - **Reranker**: `BAAI/bge-reranker-v2-m3`
+    - **Embedding**: `Gemini Embedding 1` *(via Google AI Studio)*
+    - **Reranker**: `NVIDIA Nemotron 3.5 Rerank 8B` *(via OpenRouter)*
     - **Metode Pencarian**: Hybrid Search (BM25 + ChromaDB)
     - **Conversational Memory**: Multi-Turn Query Reformulation
     - **Dasar Regulasi**: PP No. 35 Tahun 2021
