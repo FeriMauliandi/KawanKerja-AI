@@ -1,107 +1,94 @@
-# 💼 KawanKerja AI — Modern Web Frontend
+# KawanKerja AI: Web Frontend
 
-Antarmuka web modern, elegan, dan responsif untuk **KawanKerja AI**, asisten konsultasi regulasi hukum ketenagakerjaan Indonesia berbasis **PP No. 35 Tahun 2021**.
+Antarmuka web modern, terstruktur, dan responsif untuk KawanKerja AI, asisten konsultasi regulasi hukum ketenagakerjaan Indonesia berbasis Peraturan Pemerintah (PP) No. 35 Tahun 2021.
 
-Dibangun dengan **HTML5 + Tailwind CSS + Vanilla JavaScript (ES6+)** tanpa ketergantungan build tool (*zero-bundler* / *zero-build step*), sehingga ringan, cepat, dan langsung dapat dijalankan di lingkungan mana pun.
+Dibangun dengan HTML5, Tailwind CSS, dan Vanilla JavaScript (ES6+) tanpa ketergantungan build tool (zero-bundler / zero-build step), sehingga ringan, cepat, dan dapat langsung dijalankan di peramban mana pun.
 
----
+## 1. Panduan Desain & Palet Warna (Cyber Emerald & Multi-Spectrum)
 
-## 🎨 Palet Warna Cyber Emerald & Royal Neon
+UI ini menerapkan panduan desain yang terdokumentasi pada `DESIGN.md` dengan identitas visual Cyber Emerald dan aksen tematik per kategori hukum:
+* Warna Dasar (Background): `#00140f` (Deep Obsidian Emerald)
+* Warna Permukaan Panel: `rgba(2, 33, 25, 0.85)` / `#022119`
+* Warna Permukaan Kartu: `rgba(3, 46, 35, 0.70)` / `#032e23`
+* Teks Utama: `#e0fff6` (Mint White Cyan, rasio kontras > 16:1 terhadap dasar)
+* Teks Sekunder: `#80a89d` (Rasio kontras > 6:1 terhadap dasar)
+* Aksen Utama: `#04e797` (Vibrant Legal Emerald untuk penegasan status dan tombol aksi utama)
+* Multi-Spectrum Kategori Regulasi:
+  * PKWT: `#06b6d4` (Cyan)
+  * Kompensasi: `#04e797` (Emerald)
+  * Lembur: `#f59e0b` (Warm Amber)
+  * Pesangon PHK: `#f43f5e` (Rose Coral)
+  * Pangkalan Data & Dokumen: `#6366f1` (Indigo)
+  * Peringatan / Destruktif: `#ef4444` (Merah untuk pembatalan dan notifikasi kendala server)
 
-UI ini menggunakan palet warna khusus sesuai spesifikasi desain:
-* `--background: #00140f;` (Deep Obsidian Emerald / Cyber Abyss)
-* `--text: #e0fff6;` (Mint White Cyan yang sejuk dan tajam)
-* `--primary: #04e797;` (Neon Emerald Green bercahaya)
-* `--secondary: #480297;` (Deep Royal Violet)
-* `--accent: #a703b0;` (Vibrant Magenta Fuchsia)
+## 2. Fitur Antarmuka
 
----
+1. **Halaman Beranda (Landing Page) Terarah**:
+   - Menjelaskan cakupan regulasi PP No. 35 Tahun 2021 (PKWT, kompensasi, jam lembur, dan pesangon PHK).
+   - Pratinjau kasus nyata kompensasi PKWT masa kerja 8 bulan gaji Rp 6.000.000 dengan rujukan Pasal 15 ayat (1) dan (3) serta nomor halaman dokumen PDF asli.
+   - Pilihan 4 kartu kategori kasus populer (PKWT, Kompensasi, Lembur, Pesangon PHK) dengan aksen warna tersendiri yang dapat langsung diklik untuk memulai konsultasi di chatbot.
+   - Simulasi kalkulator kompensasi interaktif langsung di halaman depan.
 
-## ✨ Fitur Unggulan UI
+2. **Hero Section dengan Kanvas Timbangan Keadilan**:
+   - Kanvas animasi halus menggambarkan timbangan keadilan hukum ketenagakerjaan (Hak Pekerja dan Kepastian Hukum) yang seimbang.
+   - 7 segel regulasi mengorbit dengan warna spektrum masing-masing (PP 35/2021, Pasal 8, Pasal 15, Pasal 26, Pasal 31, Pasal 40, Kepatuhan Regulasi).
+   - Otomatis berhenti berputar jika pengguna mengaktifkan preferensi peramban `prefers-reduced-motion: reduce`.
+   - Menggunakan `IntersectionObserver` agar animasi berhenti secara otomatis ketika bagian Hero tidak berada di area pandang layar.
 
-1. **Halaman Landing Page Interaktif**:
-   - Tampilan pembuka yang memperkenalkan kapabilitas RAG KawanKerja AI.
-   - Papan metrik keandalan sistem (100% Grounded, <1s Groq LPU, Hybrid Retrieval, BAAI Reranker).
-   - 4 Kartu Kasus Cepat: klik pertanyaan populer (PKWT, kompensasi, lembur, pesangon) untuk langsung membuka chatbot dengan pertanyaan terkirim.
-   - Simulasi kalkulator kompensasi PKWT interaktif langsung di halaman depan.
-   - Tombol *"Mulai Chatbot"* yang membawa pengguna mulus ke ruang konsultasi tanpa reload halaman.
+3. **Ruang Konsultasi Chatbot**:
+   - Area masukan mengambang di bagian bawah layar yang stabil dan tidak menggeser riwayat pesan saat jawaban dicetak.
+   - Label formulir yang dapat diakses pembaca layar (screen reader) dan tombol pintas dengan atribut `aria-label` yang lengkap.
+   - Tipografi formula matematika KaTeX yang rapi tanpa tanda kurung kurawal LaTeX mentah.
+   - Riwayat percakapan multi-sesi yang tersimpan di `localStorage` peramban.
+   - Dukungan masukan suara (Voice Input / Speech-to-Text) dan pembacaan teks suara (Text-to-Speech).
+   - Fitur salin ke papan klip dan ekspor percakapan ke format Markdown (.md).
 
-2. **Page 1 Fullscreen Laptop & Animasi Yuridis (Scales of Justice & Legal Seals)**:
-   - Page 1 (Hero Section) didesain **layar penuh (*fullscreen*) pada laptop & desktop** (`min-h-[calc(100vh-4.25rem)]`) dengan perataan vertikal yang simetris dan lega.
-   - Menggunakan `<canvas id="legal-hero-canvas">` absolut yang **hanya aktif di Page 1**.
-   - Menggambarkan **Timbangan Keadilan Hukum Ketenagakerjaan (Scales of Justice)** dinamis yang menyeimbangkan piringan *"HAK PEKERJA"* (Kompensasi Ps. 15 & Lembur Ps. 31) dan *"KEPASTIAN HUKUM"* (Kontrak PKWT Ps. 8 & Regulasi PP 35/2021).
-   - Segel notaris resmi pasal-pasal kunci PP 35/2021 mengorbit lembut dengan garis vektor penyeimbang ke lengan timbangan.
-   - Pola gelombang *guilloche security ribbon* khas sertifikat dan naskah Lembaran Negara RI.
-   - Responsif terhadap kursor mouse di dalam Hero section dan otomatis berhenti (*IntersectionObserver*) saat pengguna menggulir ke seksi bawahnya.
+4. **Kalkulator Hak Ketenagakerjaan (Modal Interaktif)**:
+   - Kompensasi PKWT (Pasal 15): Formula (Masa Kerja / 12) x 1 Bulan Upah.
+   - Upah Lembur (Pasal 31 dan 32): Perhitungan upah per jam (1/173 x Upah) untuk hari kerja biasa dan hari libur resmi.
+   - Estimasi Pesangon PHK (Pasal 40 sampai 59): Formula Uang Pesangon (UP) dan Uang Penghargaan Masa Kerja (UPMK) berdasarkan faktor pengali alasan PHK.
+   - Modal dapat ditutup menggunakan tombol Escape pada keyboard atau tombol tutup yang tersedia.
 
-3. **Seksi Khusus Pratinjau Konsultasi Nyata (Seksi 2 di Bawah Page 1)**:
-   - Contoh hasil penalaran chatbot dipindahkan ke **Seksi 2 (`#pratinjau`)** tepat di bawah Page 1, sehingga Page 1 tetap bersih, berwibawa, dan tidak padat (*uncluttered*).
-   - Menampilkan kasus simulasi nyata kompensasi PKWT masa kerja 8 bulan gaji Rp 6.000.000 dengan rincian pasal 15 ayat (1) & (3) serta rujukan halaman PDF resmi.
+5. **Aksesibilitas & Standar Antislop**:
+   - Seluruh elemen interaktif memiliki kursor pointer dan fokus keyboard terlihat jelas (:focus-visible).
+   - Bebas karakter em dash di seluruh antarmuka (R-02).
+   - Target sentuh mobile memenuhi standar minimal 44x44px (R-03).
+   - Kontras warna teks memenuhi standar WCAG AA (R-25).
 
-4. **Latar Belakang Bersih & Bebas 'AI Slop' Gradient**:
-   - Menghilangkan *gradient radial blob* multi-warna yang artifisial, digantikan oleh tekstur kisi legal *micro-grid obsidian* (`#00140f`) yang tajam, formal, dan berwibawa.
-   - Gelembung pesan pengguna bergaya *dark obsidian workstation* berbingkai mikro emerald yang tegas dan mudah dibaca.
-   - Footnote sitasi naskah hukum resmi yang rapi dengan tautan verifikasi halaman dokumen PDF.
-
-5. **Ruang Chatbot Modern & Floating Input**:
-   - Form input mengambang (*floating overlay*) di bagian bawah layar yang **tidak tergeser** saat jawaban AI tercetak.
-   - Gradien transparan di balik form input yang membuat percakapan meluncur lembut di latar belakang.
-   - Tombol melayang *"Pesan Baru"* yang muncul otomatis saat pengguna menggulir ke riwayat lama.
-   - Tombol navigasi *"Beranda"* untuk kembali ke Landing Page kapan saja.
-
-3. **Rujukan Regulasi Resmi & Sitasi Terverifikasi Otomatis**:
-   - Setiap respons AI selalu menyertakan rujukan hukum resmi (nama file PDF asli, nomor halaman dokumen, dan cuplikan pasal terkait).
-   - Menampilkan konteks pertanyaan hukum yang telah disempurnakan (*conversational reformulation*) secara transparan.
-
-4. **Kalkulator Hak Ketenagakerjaan (PP No. 35/2021)**:
-   - **Kalkulator Kompensasi PKWT (Pasal 15)**: Formula $\frac{\text{Masa Kerja (Bulan)}}{12} \times \text{Upah}$.
-   - **Kalkulator Upah Lembur (Pasal 31–32)**: Perhitungan upah per jam ($1/173 \times \text{Upah}$) untuk hari kerja biasa dan hari libur resmi.
-   - **Kalkulator Estimasi Pesangon PHK (Pasal 40–59)**: Formula Uang Pesangon (UP) dan Uang Penghargaan Masa Kerja (UPMK) berdasarkan alasan PHK.
-
-5. **Interaktivitas & Aksesibilitas**:
-   - 🎙️ **Voice Input (Speech-to-Text)**: Ajukan pertanyaan langsung melalui mikrofon menggunakan Web Speech Recognition API bahasa Indonesia.
-   - 🔊 **Text-to-Speech (TTS)**: Dengarkan penjelasan hukum AI dibacakan langsung oleh browser.
-   - 📋 **Copy to Clipboard & Export Chat**: Salin jawaban dan unduh riwayat konsultasi dalam format Markdown (`.md`).
-   - 💾 **Riwayat Percakapan Multi-Sesi**: Percakapan tersimpan rapi di `localStorage` peramban.
-   - 🟢 **Live Backend Health Indicator**: Melacak ketersediaan dan latensi koneksi ke server FastAPI secara *real-time*.
-
----
-
-## 🚀 Cara Menjalankan
+## 3. Cara Menjalankan
 
 ### Cara 1: Menggunakan Python HTTP Server (Rekomendasi Standalone)
 Buka terminal di root direktori proyek:
 ```bash
 python -m http.server 3000 --directory frontend
 ```
-Lalu buka browser di:
-👉 **[http://localhost:3000](http://localhost:3000)** (Membuka Landing Page)  
-👉 **[http://localhost:3000/#chat](http://localhost:3000/#chat)** (Langsung ke Chatbot)
+Buka peramban di:
+* http://localhost:3000 (Membuka Halaman Beranda)
+* http://localhost:3000/#chat (Langsung ke Ruang Chatbot)
 
-### Cara 2: Langsung Buka File `index.html`
-Cukup klik ganda file `frontend/index.html` di File Explorer Anda.
+### Cara 2: Langsung Buka File index.html
+Buka file `frontend/index.html` langsung di peramban web Anda.
 
 ### Cara 3: Melalui FastAPI Backend
 Jika backend FastAPI dijalankan:
 ```bash
 uvicorn backend.api:app --reload
 ```
-UI frontend dapat diakses langsung pada:
-👉 **[http://127.0.0.1:8000/app](http://127.0.0.1:8000/app)**
+Akses antarmuka di:
+* http://127.0.0.1:8000/app
 
----
-
-## 📂 Struktur File
+## 4. Struktur File
 
 ```text
 frontend/
+├── DESIGN.md          # Dokumen arah desain resmi (antislop direction)
 ├── index.html         # Landing Page & Chatbot App (Dual View SPA)
-├── chat.html          # Redirect langsung ke ruang chat
+├── chat.html          # Pengalihan langsung ke ruang chat
 ├── css/
-│   └── style.css      # Palet warna cyber emerald, glassmorphism & markdown prose
+│   └── style.css      # Palet Cyber Emerald, glassmorphism, dan aksesibilitas
 ├── js/
-│   ├── app.js         # Logika navigasi landing/chat, interaksi AI & state
-│   └── calculator.js  # Modul kalkulator kompensasi, lembur, dan pesangon PP 35/2021
-├── app.py             # Implementasi alternatif via Streamlit
+│   ├── app.js         # Logika interaksi, kanvas, navigasi, dan REST client
+│   └── calculator.js  # Modul kalkulator hak ketenagakerjaan PP 35/2021
+├── app.py             # Implementasi antarmuka alternatif via Streamlit
 └── README.md          # Dokumentasi teknis frontend
 ```

@@ -3,7 +3,34 @@ import os
 import sys
 import time
 import requests
+import re
 from pathlib import Path
+
+def clean_formulas_and_html(s: str) -> str:
+    if not s:
+        return ""
+    cleaned = re.sub(r'<\/?(?:p|div|span|br|b|i|u|em|strong|table|thead|tbody|tr|th|td|font|center|small|big)\b[^>]*>', ' ', s, flags=re.IGNORECASE)
+    cleaned = cleaned.replace('&times;', 'x').replace('&divide;', '/').replace('&plusmn;', '±').replace('&nbsp;', ' ')
+
+    def repl_block(m):
+        formula = m.group(1)
+        if any(k in formula for k in ['\\text', '\\frac', '\\times', '\\cdot', ';=;', '\\;', '=']):
+            f = re.sub(r'\\text\{([^}]+)\}', r'\1', formula)
+            f = re.sub(r'\\frac\{([^}]+)\}\{([^}]+)\}', r'(\1 / \2)', f)
+            f = f.replace('\\times', 'x').replace('\\cdot', 'x')
+            f = re.sub(r';\s*=\s*;', '=', f)
+            f = f.replace('\\;', ' ').replace('\\,', ' ').replace('\\ ', ' ').replace('\\', '')
+            f = re.sub(r'\s+', ' ', f).strip()
+            return f'\n\n`{f}`\n\n'
+        return m.group(0)
+
+    cleaned = re.sub(r'\\?\[\s*([\s\S]*?)\s*\\?\]', repl_block, cleaned)
+    cleaned = re.sub(r'\\text\{([^}]+)\}', r'\1', cleaned)
+    cleaned = re.sub(r'\\frac\{([^}]+)\}\{([^}]+)\}', r'(\1 / \2)', cleaned)
+    cleaned = cleaned.replace('\\times', 'x').replace('\\cdot', 'x')
+    cleaned = re.sub(r';\s*=\s*;', '=', cleaned)
+    cleaned = cleaned.replace('\\;', ' ').replace('\\,', ' ').replace('\\ ', ' ')
+    return cleaned
 
 # Memastikan root project terdaftar di sys.path bila dijalankan via `streamlit run frontend/app.py`
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -133,7 +160,7 @@ if prompt := st.chat_input("Tulis pertanyaan Anda seputar aturan kerja (contoh: 
                     backend_label = "Direct Embedded"
 
                 latency = time.time() - start_time
-                jawaban = result["answer"]
+                jawaban = clean_formulas_and_html(result["answer"])
                 sources = result.get("sources", [])
                 standalone = result.get("standalone_question", prompt)
 

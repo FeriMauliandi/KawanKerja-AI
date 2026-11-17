@@ -1,13 +1,7 @@
 /**
  * KawanKerja AI - Core Application Logic
- * Modern, responsive, decoupled REST client for PP No. 35/2021 Legal Assistant
- * Palette:
- * --text: #e0fff6;
- * --background: #00140f;
- * --primary: #04e797;
- * --secondary: #480297;
- * --accent: #a703b0;
- * Auxiliary: #06b6d4 (cyan), #f59e0b (amber), #f43f5e (rose), #6366f1 (indigo)
+ * Legal Tech Assistant for Indonesian Employment Law (PP No. 35/2021)
+ * Direction: Cyber Emerald & Multi-Spectrum Legal Tech (Antislop Compliant)
  */
 
 (function () {
@@ -78,7 +72,7 @@
         });
     }
 
-    // View Routing: Landing Page vs Chatbot View
+    // View Routing
     let canvasAnimationController = null;
 
     function switchToChatView(initialPrompt = null) {
@@ -112,10 +106,7 @@
         triggerScrollAnimations();
     }
 
-    // =========================================================================
-    // Legal & Employment Topic Animation — CONFINED TO PAGE 1 / HERO SECTION ONLY
-    // Theme: Timbangan Keadilan (Scales of Justice) & Segel Regulasi PP 35/2021
-    // =========================================================================
+    // Legal Scales Animation confined to Hero section
     function initLegalHeroAnimation() {
         const canvas = document.getElementById('legal-hero-canvas');
         const heroSection = document.getElementById('hero');
@@ -130,7 +121,8 @@
         let isRunning = false;
         let isHeroInView = true;
 
-        // Interactive mouse tracking confined to Hero section
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
         const mouse = {
             x: -2000,
             y: -2000,
@@ -142,7 +134,7 @@
             const rect = heroSection.getBoundingClientRect();
             mouse.x = e.clientX - rect.left;
             mouse.y = e.clientY - rect.top;
-            mouse.normX = ((mouse.x / (rect.width || 1)) * 2 - 1); // -1 to +1
+            mouse.normX = ((mouse.x / (rect.width || 1)) * 2 - 1);
             mouse.active = true;
         });
 
@@ -159,23 +151,25 @@
             canvas.style.width = width + 'px';
             canvas.style.height = height + 'px';
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            if (prefersReducedMotion) {
+                renderSingleFrame();
+            }
         }
 
         resize();
         window.addEventListener('resize', resize);
 
-        // Official Notarized Legal Seals / Articles orbiting in Hero
         const LEGAL_SEALS = [
-            { label: 'PP No. 35/2021', sub: 'Lembaran Negara RI No. 45', color: '#04e797', isHub: true },
-            { label: 'Pasal 8 PKWT', sub: 'Batas Total 5 Tahun', color: '#06b6d4', isHub: false },
-            { label: 'Pasal 15 Kompensasi', sub: '(Masa Kerja/12) × Upah', color: '#04e797', isHub: false },
-            { label: 'Pasal 26 Lembur', sub: 'Maks. 4 Jam/Hari & 18 Jam/Mg', color: '#f59e0b', isHub: false },
-            { label: 'Pasal 31 Upah Lembur', sub: 'Rumus Baku 1/173 Upah', color: '#f59e0b', isHub: false },
-            { label: 'Pasal 40 Pesangon PHK', sub: 'Formula UP & UPMK', color: '#f43f5e', isHub: false },
-            { label: 'Kepatuhan Regulasi', sub: 'Transparansi Hubungan Kerja', color: '#6366f1', isHub: false }
+            { label: 'PP No. 35/2021', sub: 'Lembaran Negara RI No. 45', isHub: true, color: '#04e797', border: 'rgba(4, 231, 151, 0.6)' },
+            { label: 'Pasal 8 PKWT', sub: 'Batas Total 5 Tahun', isHub: false, color: '#06b6d4', border: 'rgba(6, 182, 212, 0.45)' },
+            { label: 'Pasal 15 Kompensasi', sub: '(Masa Kerja/12) x Upah', isHub: false, color: '#04e797', border: 'rgba(4, 231, 151, 0.45)' },
+            { label: 'Pasal 26 Lembur', sub: 'Maks. 4 Jam/Hari & 18 Jam/Mg', isHub: false, color: '#f59e0b', border: 'rgba(245, 158, 11, 0.45)' },
+            { label: 'Pasal 31 Upah Lembur', sub: 'Rumus Baku 1/173 Upah', isHub: false, color: '#f59e0b', border: 'rgba(245, 158, 11, 0.45)' },
+            { label: 'Pasal 40 Pesangon PHK', sub: 'Formula UP & UPMK', isHub: false, color: '#f43f5e', border: 'rgba(244, 63, 94, 0.45)' },
+            { label: 'Kepatuhan Regulasi', sub: 'Transparansi Hubungan Kerja', isHub: false, color: '#6366f1', border: 'rgba(99, 102, 241, 0.45)' }
         ];
 
-        // Instantiate seals with distributed starting positions inside Hero
         const seals = LEGAL_SEALS.map((item, i) => {
             const angle = (i / LEGAL_SEALS.length) * Math.PI * 2;
             const rx = Math.min(width * 0.38, 420);
@@ -188,8 +182,7 @@
                 baseAngle: angle,
                 orbitRadiusX: rx,
                 orbitRadiusY: ry,
-                orbitSpeed: 0.0015 + (i % 3) * 0.0006,
-                pulseOffset: Math.random() * Math.PI
+                orbitSpeed: 0.0012 + (i % 3) * 0.0004
             };
         });
 
@@ -197,49 +190,22 @@
         let targetTilt = 0;
         let time = 0;
 
-        function render() {
-            if (!isRunning) return;
+        function renderSingleFrame() {
+            drawScene(0, 0);
+        }
 
-            time += 0.016;
+        function drawScene(t, tilt) {
             ctx.clearRect(0, 0, width, height);
 
-            // =================================================================
-            // 1. Guilloche Security Wave Ribbons (Lembaran Negara RI Pattern)
-            // =================================================================
-            const waveY = height * 0.38;
-            ctx.lineWidth = 1;
-            for (let w = 0; w < 3; w++) {
-                ctx.beginPath();
-                const freq = 0.0035 + w * 0.0015;
-                const amp = 26 - w * 6;
-                const phase = time * (0.4 + w * 0.2);
-
-                for (let x = 0; x <= width; x += 12) {
-                    const y = waveY + Math.sin(x * freq + phase) * amp + Math.cos(x * 0.002 - phase * 0.5) * (amp * 0.4);
-                    if (x === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
-                }
-                ctx.strokeStyle = w === 0 ? 'rgba(4, 231, 151, 0.07)' : (w === 1 ? 'rgba(6, 182, 212, 0.05)' : 'rgba(72, 2, 151, 0.08)');
-                ctx.stroke();
-            }
-
-            // =================================================================
-            // 2. The Scales of Justice (Timbangan Hukum Ketenagakerjaan)
-            // =================================================================
+            // Scales of Justice
             const scaleCenterX = width * 0.5;
             const scaleCenterY = Math.min(height * 0.32, 250);
             const beamLength = Math.min(width * 0.58, 380);
             const halfBeam = beamLength * 0.5;
 
-            // Natural balance harmonic oscillation + mouse influence
-            const naturalSway = Math.sin(time * 0.9) * 0.032;
-            targetTilt = naturalSway + (mouse.active ? mouse.normX * 0.07 : 0);
-            currentTilt += (targetTilt - currentTilt) * 0.06; // smooth spring lerp
-
-            // Central Law Pillar (Tiang Keadilan)
             ctx.save();
-            ctx.strokeStyle = 'rgba(4, 231, 151, 0.22)';
-            ctx.fillStyle = 'rgba(4, 231, 151, 0.12)';
+            ctx.strokeStyle = 'rgba(4, 231, 151, 0.25)';
+            ctx.fillStyle = 'rgba(4, 231, 151, 0.08)';
             ctx.lineWidth = 1.5;
 
             // Pillar base
@@ -263,151 +229,144 @@
             // Fulcrum Top Ring
             ctx.beginPath();
             ctx.arc(scaleCenterX, scaleCenterY - 14, 8, 0, Math.PI * 2);
-            ctx.strokeStyle = 'rgba(4, 231, 151, 0.45)';
+            ctx.strokeStyle = 'rgba(4, 231, 151, 0.5)';
             ctx.stroke();
 
-            // Balancing Crossbeam (Lengan Timbangan)
-            const leftX = scaleCenterX - Math.cos(currentTilt) * halfBeam;
-            const leftY = scaleCenterY - 14 - Math.sin(currentTilt) * halfBeam;
-            const rightX = scaleCenterX + Math.cos(currentTilt) * halfBeam;
-            const rightY = scaleCenterY - 14 + Math.sin(currentTilt) * halfBeam;
+            // Balancing Crossbeam
+            const leftX = scaleCenterX - Math.cos(tilt) * halfBeam;
+            const leftY = scaleCenterY - 14 - Math.sin(tilt) * halfBeam;
+            const rightX = scaleCenterX + Math.cos(tilt) * halfBeam;
+            const rightY = scaleCenterY - 14 + Math.sin(tilt) * halfBeam;
 
             ctx.beginPath();
             ctx.moveTo(leftX, leftY);
             ctx.lineTo(rightX, rightY);
-            ctx.strokeStyle = 'rgba(4, 231, 151, 0.35)';
-            ctx.lineWidth = 2.2;
+            ctx.strokeStyle = 'rgba(4, 231, 151, 0.4)';
+            ctx.lineWidth = 2;
             ctx.stroke();
 
-            // Left Pan: "HAK PEKERJA" (Kompensasi, Lembur, Pesangon)
-            const leftPanY = leftY + 68 + Math.cos(time * 0.9) * 4;
+            // Left Pan: HAK PEKERJA (Cyan accent)
+            const leftPanY = leftY + 68 + Math.cos(t * 0.9) * 3;
             const panWidth = 46;
 
-            // 3 Suspension strings
             ctx.lineWidth = 0.85;
-            ctx.strokeStyle = 'rgba(4, 231, 151, 0.25)';
+            ctx.strokeStyle = 'rgba(6, 182, 212, 0.3)';
             ctx.beginPath();
             ctx.moveTo(leftX, leftY); ctx.lineTo(leftX - panWidth * 0.5, leftPanY);
             ctx.moveTo(leftX, leftY); ctx.lineTo(leftX, leftPanY);
             ctx.moveTo(leftX, leftY); ctx.lineTo(leftX + panWidth * 0.5, leftPanY);
             ctx.stroke();
 
-            // Pan dish
             ctx.beginPath();
             ctx.arc(leftX, leftPanY - 4, panWidth * 0.5, 0.15, Math.PI - 0.15);
-            ctx.strokeStyle = 'rgba(4, 231, 151, 0.45)';
+            ctx.strokeStyle = 'rgba(6, 182, 212, 0.6)';
             ctx.lineWidth = 1.5;
             ctx.stroke();
 
-            // Left Plaque Text
             ctx.font = '600 9.5px "Plus Jakarta Sans", sans-serif';
-            ctx.fillStyle = 'rgba(4, 231, 151, 0.65)';
+            ctx.fillStyle = 'rgba(6, 182, 212, 0.9)';
             ctx.textAlign = 'center';
             ctx.fillText('HAK PEKERJA', leftX, leftPanY + 16);
 
-            // Right Pan: "KEPASTIAN USAHA" (PKWT, Kepatuhan PP 35/2021)
-            const rightPanY = rightY + 68 - Math.cos(time * 0.9) * 4;
+            // Right Pan: KEPASTIAN HUKUM (Emerald accent)
+            const rightPanY = rightY + 68 - Math.cos(t * 0.9) * 3;
 
-            // 3 Suspension strings
             ctx.lineWidth = 0.85;
-            ctx.strokeStyle = 'rgba(6, 182, 212, 0.25)';
+            ctx.strokeStyle = 'rgba(4, 231, 151, 0.3)';
             ctx.beginPath();
             ctx.moveTo(rightX, rightY); ctx.lineTo(rightX - panWidth * 0.5, rightPanY);
             ctx.moveTo(rightX, rightY); ctx.lineTo(rightX, rightPanY);
             ctx.moveTo(rightX, rightY); ctx.lineTo(rightX + panWidth * 0.5, rightPanY);
             ctx.stroke();
 
-            // Pan dish
             ctx.beginPath();
             ctx.arc(rightX, rightPanY - 4, panWidth * 0.5, 0.15, Math.PI - 0.15);
-            ctx.strokeStyle = 'rgba(6, 182, 212, 0.45)';
+            ctx.strokeStyle = 'rgba(4, 231, 151, 0.6)';
             ctx.lineWidth = 1.5;
             ctx.stroke();
 
-            // Right Plaque Text
             ctx.font = '600 9.5px "Plus Jakarta Sans", sans-serif';
-            ctx.fillStyle = 'rgba(6, 182, 212, 0.65)';
+            ctx.fillStyle = 'rgba(4, 231, 151, 0.9)';
             ctx.textAlign = 'center';
             ctx.fillText('KEPASTIAN HUKUM', rightX, rightPanY + 16);
 
             ctx.restore();
 
-            // =================================================================
-            // 3. Floating Notarized Article Seals (Pasal-Pasal Resmi PP 35/2021)
-            // =================================================================
+            // Floating Legal Seals with category colors
             for (let i = 0; i < seals.length; i++) {
                 const seal = seals[i];
 
-                // Slow, graceful orbital drift within hero
-                seal.baseAngle += seal.orbitSpeed;
-                const targetX = width * 0.5 + Math.cos(seal.baseAngle) * seal.orbitRadiusX;
-                const targetY = height * 0.46 + Math.sin(seal.baseAngle) * seal.orbitRadiusY;
-
-                seal.x += (targetX - seal.x) * 0.05;
-                seal.y += (targetY - seal.y) * 0.05;
-
-                // Fine vector thread connecting seal to the Scales of Justice beam
                 const beamAnchorX = i % 2 === 0 ? leftX : rightX;
                 const beamAnchorY = i % 2 === 0 ? leftY : rightY;
 
                 ctx.beginPath();
                 ctx.moveTo(beamAnchorX, beamAnchorY);
                 ctx.lineTo(seal.x, seal.y);
-                ctx.strokeStyle = 'rgba(4, 231, 151, 0.09)';
+                ctx.strokeStyle = 'rgba(4, 231, 151, 0.12)';
                 ctx.lineWidth = 0.75;
                 ctx.stroke();
 
-                // Draw Legal Seal Card
                 const cardW = seal.isHub ? 150 : 138;
                 const cardH = 34;
                 const cardX = seal.x - cardW * 0.5;
                 const cardY = seal.y - cardH * 0.5;
 
-                // Outer seal background
                 ctx.save();
-                ctx.fillStyle = 'rgba(2, 33, 25, 0.78)';
-                ctx.strokeStyle = seal.color;
-                ctx.lineWidth = 1;
-                ctx.shadowBlur = seal.isHub ? 10 : 6;
-                ctx.shadowColor = seal.color;
+                ctx.fillStyle = '#022119';
+                ctx.strokeStyle = seal.border || 'rgba(4, 231, 151, 0.3)';
+                ctx.lineWidth = seal.isHub ? 1.5 : 1;
 
-                // Rounded badge
                 ctx.beginPath();
                 ctx.roundRect(cardX, cardY, cardW, cardH, 8);
                 ctx.fill();
                 ctx.stroke();
-                ctx.shadowBlur = 0;
 
-                // Inner double-border ring (notary seal feel)
-                ctx.strokeStyle = 'rgba(224, 255, 246, 0.15)';
-                ctx.lineWidth = 0.5;
                 ctx.beginPath();
-                ctx.roundRect(cardX + 2.5, cardY + 2.5, cardW - 5, cardH - 5, 6);
-                ctx.stroke();
-
-                // Mini legal pip
-                ctx.beginPath();
-                ctx.arc(cardX + 11, seal.y, 3, 0, Math.PI * 2);
-                ctx.fillStyle = seal.color;
+                ctx.arc(cardX + 11, seal.y, 3.5, 0, Math.PI * 2);
+                ctx.fillStyle = seal.color || '#04e797';
                 ctx.fill();
 
-                // Typography
                 ctx.textAlign = 'left';
                 ctx.font = '700 10px "JetBrains Mono", monospace';
                 ctx.fillStyle = '#e0fff6';
                 ctx.fillText(seal.label, cardX + 20, seal.y - 2);
 
                 ctx.font = '500 8.5px "Plus Jakarta Sans", sans-serif';
-                ctx.fillStyle = 'rgba(224, 255, 246, 0.55)';
+                ctx.fillStyle = '#80a89d';
                 ctx.fillText(seal.sub, cardX + 20, seal.y + 9);
 
                 ctx.restore();
             }
+        }
 
+        function render() {
+            if (!isRunning) return;
+
+            time += 0.016;
+
+            const naturalSway = Math.sin(time * 0.9) * 0.03;
+            targetTilt = naturalSway + (mouse.active ? mouse.normX * 0.06 : 0);
+            currentTilt += (targetTilt - currentTilt) * 0.05;
+
+            for (let i = 0; i < seals.length; i++) {
+                const seal = seals[i];
+                seal.baseAngle += seal.orbitSpeed;
+                const targetX = width * 0.5 + Math.cos(seal.baseAngle) * seal.orbitRadiusX;
+                const targetY = height * 0.46 + Math.sin(seal.baseAngle) * seal.orbitRadiusY;
+
+                seal.x += (targetX - seal.x) * 0.04;
+                seal.y += (targetY - seal.y) * 0.04;
+            }
+
+            drawScene(time, currentTilt);
             animFrameId = requestAnimationFrame(render);
         }
 
         function start() {
+            if (prefersReducedMotion) {
+                renderSingleFrame();
+                return;
+            }
             if (!isRunning && isHeroInView) {
                 isRunning = true;
                 animFrameId = requestAnimationFrame(render);
@@ -422,7 +381,6 @@
             }
         }
 
-        // IntersectionObserver: Pause when Hero section is out of viewport!
         if ('IntersectionObserver' in window) {
             const heroObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
@@ -438,7 +396,6 @@
             heroObserver.observe(heroSection);
         }
 
-        // Visibility listener (pause when tab hidden)
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
                 stop();
@@ -447,7 +404,6 @@
             }
         });
 
-        // Controller for external callers
         canvasAnimationController = { start, stop, resize };
         start();
     }
@@ -488,7 +444,6 @@
 
             triggerScrollAnimations();
         } else {
-            // Fallback for older browsers
             document.querySelectorAll('.reveal-on-scroll').forEach(el => {
                 el.classList.add('is-visible');
             });
@@ -536,23 +491,22 @@
         if (DOM.statusBadge && DOM.statusText && DOM.statusPing) {
             if (online) {
                 DOM.statusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#04e797]/15 text-[#04e797] border border-[#04e797]/30';
-                DOM.statusPing.className = 'w-2 h-2 rounded-full bg-[#04e797] pulse-ring';
+                DOM.statusPing.className = 'w-2 h-2 rounded-full bg-[#04e797]';
                 DOM.statusText.textContent = `Online (${latency || '<50'}ms)`;
             } else {
-                DOM.statusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/15 text-rose-400 border border-rose-500/30';
-                DOM.statusPing.className = 'w-2 h-2 rounded-full bg-rose-500';
-                DOM.statusText.textContent = 'Backend Offline';
+                DOM.statusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#ef4444]/15 text-[#ef4444] border border-[#ef4444]/30';
+                DOM.statusPing.className = 'w-2 h-2 rounded-full bg-[#ef4444]';
+                DOM.statusText.textContent = 'Server Offline';
             }
         }
 
-        // Also update landing badges if present
         document.querySelectorAll('.landing-status-badge').forEach(badge => {
             if (online) {
                 badge.className = 'landing-status-badge hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#04e797]/10 text-[#04e797] border border-[#04e797]/30';
-                badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-[#04e797] pulse-ring"></span><span>AI Engine Siap (${latency || '<50'}ms)</span>`;
+                badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-[#04e797]"></span><span>Layanan Aktif (${latency || '<50'}ms)</span>`;
             } else {
-                badge.className = 'landing-status-badge hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30';
-                badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span><span>Server Offline</span>`;
+                badge.className = 'landing-status-badge hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#ef4444]/10 text-[#ef4444] border border-[#ef4444]/30';
+                badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-[#ef4444]"></span><span>Server Offline</span>`;
             }
         });
     }
@@ -587,7 +541,7 @@
 
         if (AppState.sessions.length === 0) {
             DOM.sessionList.innerHTML = `
-                <div class="px-3 py-4 text-xs text-[#e0fff6]/50 text-center">
+                <div class="px-3 py-4 text-xs text-[#80a89d] text-center">
                     Belum ada riwayat percakapan.
                 </div>
             `;
@@ -597,18 +551,18 @@
         AppState.sessions.forEach(session => {
             const isActive = session.id === AppState.activeSessionId;
             const item = document.createElement('div');
-            item.className = `group flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all cursor-pointer ${
+            item.className = `group flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-colors cursor-pointer ${
                 isActive 
-                    ? 'bg-gradient-to-r from-cyan-500/20 to-[#04e797]/15 text-cyan-300 border border-cyan-400/40 font-bold' 
-                    : 'text-[#e0fff6]/70 hover:bg-[#022119] hover:text-[#e0fff6]'
+                    ? 'bg-gradient-to-r from-[#04e797]/15 to-transparent text-[#e0fff6] border-l-2 border-[#04e797] font-semibold pl-2.5' 
+                    : 'text-[#80a89d] hover:bg-[#032e23] hover:text-[#e0fff6]'
             }`;
 
             item.innerHTML = `
                 <div class="flex items-center gap-2.5 min-w-0 flex-1">
-                    <i data-lucide="${isActive ? 'message-square-text' : 'message-square'}" class="w-4 h-4 shrink-0 ${isActive ? 'text-cyan-400' : 'text-[#04e797]/60'}"></i>
+                    <i data-lucide="${isActive ? 'message-square-text' : 'message-square'}" class="w-4 h-4 shrink-0 ${isActive ? 'text-[#04e797]' : 'text-[#80a89d]'}"></i>
                     <span class="truncate">${escapeHtml(session.title || 'Percakapan')}</span>
                 </div>
-                <button class="delete-session-btn opacity-0 group-hover:opacity-100 hover:text-rose-400 p-1 transition-opacity" title="Hapus Chat">
+                <button class="delete-session-btn opacity-0 group-hover:opacity-100 hover:text-[#ef4444] p-1 transition-opacity" aria-label="Hapus Chat" title="Hapus Chat">
                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                 </button>
             `;
@@ -653,7 +607,7 @@
         renderMessages();
     }
 
-    // Message Rendering with Multi-Color Aesthetics
+    // Message Rendering
     function renderMessages() {
         const session = getActiveSession();
         if (!session || session.messages.length === 0) {
@@ -690,40 +644,38 @@
         if (msg.role === 'user') {
             messageEl.innerHTML = `
                 <div class="flex items-start justify-end gap-3">
-                    <div class="max-w-[85%] sm:max-w-[75%] rounded-2xl rounded-tr-sm bg-[#062019] text-[#e0fff6] px-4 py-3 shadow-md text-sm sm:text-base leading-relaxed border border-[#04e797]/30">
+                    <div class="max-w-[85%] sm:max-w-[75%] rounded-2xl rounded-tr-sm bg-[#032e23] text-[#e0fff6] px-4 sm:px-5 py-3 text-sm sm:text-base leading-relaxed border border-[#04e797]/25 shadow-[0_4px_16px_rgba(0,20,15,0.4)]">
                         ${escapeHtml(msg.content)}
                     </div>
-                    <div class="w-8 h-8 rounded-full bg-[#022119] border border-[#04e797]/35 flex items-center justify-center shrink-0 text-[#04e797] shadow-sm">
+                    <div class="w-8 h-8 rounded-full bg-[#032e23] border border-[#04e797]/40 flex items-center justify-center shrink-0 text-[#04e797] shadow-sm">
                         <i data-lucide="user" class="w-4 h-4"></i>
                     </div>
                 </div>
             `;
         } else {
-            // Assistant Message with Clean Legal Hierarchy
             const safeHtml = formatMarkdown(msg.content);
             const standaloneSnippet = msg.standalone && msg.standalone !== msg.original_question
-                ? `<div class="mb-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#00140f] text-cyan-300 border border-cyan-500/30 shadow-sm">
-                    <i data-lucide="git-branch" class="w-3.5 h-3.5 text-cyan-400"></i>
-                    <span>Konteks Pertanyaan: <em class="text-amber-200 font-medium">${escapeHtml(msg.standalone)}</em></span>
+                ? `<div class="mb-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-[#00140f] text-[#e0fff6] border border-[#04e797]/20">
+                    <i data-lucide="git-branch" class="w-3.5 h-3.5 text-[#04e797]"></i>
+                    <span>Konteks Pertanyaan: <em class="text-[#f59e0b] font-medium">${escapeHtml(msg.standalone)}</em></span>
                    </div>`
                 : '';
 
-            // Sources list with Official Legal Citations
             let sourcesSnippet = '';
             if (msg.sources && msg.sources.length > 0) {
                 const sourceCards = msg.sources.map((s, sIdx) => `
-                    <button class="source-chip text-left flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs bg-[#00140f] hover:bg-cyan-500/15 text-[#e0fff6] border border-cyan-500/30 hover:border-cyan-400 transition-all shadow-sm group cursor-pointer" data-src-idx="${sIdx}">
-                        <i data-lucide="file-check-2" class="w-3.5 h-3.5 text-cyan-400 shrink-0 group-hover:scale-110 transition-transform"></i>
+                    <button class="source-chip text-left flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-[#00140f] hover:bg-[#032e23] text-[#e0fff6] border border-[#04e797]/20 hover:border-[#04e797]/50 transition-colors cursor-pointer" data-src-idx="${sIdx}" aria-label="Lihat rujukan ${escapeHtml(s.source)}">
+                        <i data-lucide="file-check-2" class="w-3.5 h-3.5 text-[#04e797] shrink-0"></i>
                         <span class="font-medium text-[#e0fff6] truncate max-w-[150px] sm:max-w-[200px]">${escapeHtml(s.source)}</span>
-                        <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono text-[10px] font-bold">Hal. ${s.page}</span>
+                        <span class="px-1.5 py-0.5 rounded bg-[#f59e0b]/15 text-[#f59e0b] border border-[#f59e0b]/30 font-mono text-[10px] font-bold">Hal. ${s.page}</span>
                     </button>
                 `).join('');
 
                 sourcesSnippet = `
-                    <div class="mt-4 pt-3 border-t border-[#04e797]/20">
+                    <div class="mt-4 pt-3 border-t border-white/10">
                         <div class="flex items-center gap-1.5 text-xs font-semibold text-[#04e797] mb-2">
                             <i data-lucide="scale" class="w-3.5 h-3.5"></i>
-                            <span>Rujukan Regulasi Resmi PP No. 35/2021 (${msg.sources.length} Dokumen):</span>
+                            <span>Rujukan Dokumen Resmi PP No. 35/2021 (${msg.sources.length} Rujukan):</span>
                         </div>
                         <div class="flex flex-wrap gap-2">
                             ${sourceCards}
@@ -734,24 +686,22 @@
 
             messageEl.innerHTML = `
                 <div class="flex items-start gap-3">
-                    <div class="w-8 h-8 rounded-full bg-[#022119] border border-[#04e797]/40 text-[#04e797] font-bold flex items-center justify-center shrink-0 shadow-md shadow-[#04e797]/15">
+                    <div class="w-8 h-8 rounded-full bg-[#022119] border border-[#04e797]/40 text-[#04e797] font-bold flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(4,231,151,0.2)]">
                         <i data-lucide="scale" class="w-4 h-4"></i>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <div class="glass-card rounded-2xl rounded-tl-sm p-4 sm:p-5 shadow-lg border border-[#04e797]/25 bg-[#022119]/85 relative overflow-hidden">
-                            <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#04e797] via-[#06b6d4] to-transparent"></div>
+                        <div class="legal-card rounded-2xl rounded-tl-sm p-4 sm:p-5 border border-[#04e797]/25 bg-[#022119] relative overflow-hidden shadow-[0_8px_30px_rgba(0,20,15,0.5)]">
                             ${standaloneSnippet}
                             <div class="markdown-body text-[#e0fff6]">
                                 ${safeHtml}
                             </div>
                             ${sourcesSnippet}
                         </div>
-                        <!-- Action Bar -->
-                        <div class="flex items-center gap-1 mt-1.5 px-2 text-xs text-[#e0fff6]/50">
-                            <button class="copy-btn hover:text-cyan-300 p-1.5 rounded-lg hover:bg-[#022119] transition" title="Salin Jawaban">
+                        <div class="flex items-center gap-1 mt-1.5 px-2 text-xs text-[#80a89d]">
+                            <button class="copy-btn hover:text-[#e0fff6] p-1.5 rounded-lg hover:bg-[#032e23] transition" aria-label="Salin Jawaban" title="Salin Jawaban">
                                 <i data-lucide="copy" class="w-3.5 h-3.5"></i>
                             </button>
-                            <button class="tts-btn hover:text-amber-300 p-1.5 rounded-lg hover:bg-[#022119] transition" title="Dengarkan Suara (TTS)">
+                            <button class="tts-btn hover:text-[#e0fff6] p-1.5 rounded-lg hover:bg-[#032e23] transition" aria-label="Dengarkan Suara (TTS)" title="Dengarkan Suara (TTS)">
                                 <i data-lucide="volume-2" class="w-3.5 h-3.5"></i>
                             </button>
                             <span class="text-[11px] text-[#04e797] ml-auto flex items-center gap-1 font-semibold">
@@ -762,11 +712,10 @@
                 </div>
             `;
 
-            // Setup listeners for copy and tts
             const copyBtn = messageEl.querySelector('.copy-btn');
             copyBtn.addEventListener('click', () => {
                 navigator.clipboard.writeText(msg.content);
-                copyBtn.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5 text-[#04e797]"></i>';
+                copyBtn.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5 text-[#10b981]"></i>';
                 if (window.lucide) window.lucide.createIcons();
                 setTimeout(() => {
                     copyBtn.innerHTML = '<i data-lucide="copy" class="w-3.5 h-3.5"></i>';
@@ -779,7 +728,6 @@
                 playTextToSpeech(msg.content, ttsBtn);
             });
 
-            // Source click listeners
             if (msg.sources) {
                 const sourceChips = messageEl.querySelectorAll('.source-chip');
                 sourceChips.forEach(chip => {
@@ -792,10 +740,27 @@
         }
 
         DOM.chatContainer.appendChild(messageEl);
+
+        // Render mathematical formulas via KaTeX if loaded
+        if (window.renderMathInElement) {
+            try {
+                window.renderMathInElement(messageEl, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false },
+                        { left: '\\[', right: '\\]', display: true },
+                        { left: '\\(', right: '\\)', display: false }
+                    ],
+                    throwOnError: false
+                });
+            } catch (mathErr) {
+                console.warn('KaTeX auto-render skipped:', mathErr);
+            }
+        }
+
         if (window.lucide) window.lucide.createIcons();
     }
 
-    // Scroll chat to bottom with requestAnimationFrame
     function scrollToBottom(smooth = true) {
         if (!DOM.chatContainer) return;
         requestAnimationFrame(() => {
@@ -809,7 +774,7 @@
     // Text to Speech
     function playTextToSpeech(text, btnElement) {
         if (!('speechSynthesis' in window)) {
-            alert('Browser Anda tidak mendukung Speech Synthesis.');
+            alert('Peramban Anda tidak mendukung Speech Synthesis.');
             return;
         }
 
@@ -829,7 +794,7 @@
         utterance.rate = 1.0;
 
         AppState.speakingUtterance = text;
-        btnElement.innerHTML = '<i data-lucide="square" class="w-3.5 h-3.5 text-rose-500"></i>';
+        btnElement.innerHTML = '<i data-lucide="square" class="w-3.5 h-3.5 text-[#ef4444]"></i>';
         if (window.lucide) window.lucide.createIcons();
 
         utterance.onend = () => {
@@ -847,7 +812,7 @@
         window.speechSynthesis.speak(utterance);
     }
 
-    // Speech to Text (Microphone)
+    // Speech to Text
     function initSpeechRecognition() {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
@@ -862,8 +827,8 @@
 
         recognizer.onstart = () => {
             AppState.isListening = true;
-            DOM.micBtn.classList.add('text-rose-400', 'animate-pulse');
-            DOM.userInput.placeholder = 'Sedang mendengarkan suara Anda...';
+            DOM.micBtn.classList.add('mic-active', 'text-[#f43f5e]');
+            DOM.userInput.placeholder = 'Mendengarkan masukan suara...';
         };
 
         recognizer.onresult = (event) => {
@@ -874,14 +839,14 @@
 
         recognizer.onend = () => {
             AppState.isListening = false;
-            DOM.micBtn.classList.remove('text-rose-400', 'animate-pulse');
-            DOM.userInput.placeholder = 'Tanyakan tentang batas PKWT, kompensasi, jam lembur, pesangon PHK...';
+            DOM.micBtn.classList.remove('mic-active', 'text-[#f43f5e]');
+            DOM.userInput.placeholder = 'Tuliskan pertanyaan seputar batas PKWT, kompensasi, upah lembur, pesangon PHK...';
         };
 
         recognizer.onerror = () => {
             AppState.isListening = false;
-            DOM.micBtn.classList.remove('text-rose-400', 'animate-pulse');
-            DOM.userInput.placeholder = 'Tanyakan tentang batas PKWT, kompensasi, jam lembur, pesangon PHK...';
+            DOM.micBtn.classList.remove('mic-active', 'text-[#f43f5e]');
+            DOM.userInput.placeholder = 'Tuliskan pertanyaan seputar batas PKWT, kompensasi, upah lembur, pesangon PHK...';
         };
 
         AppState.speechRecognizer = recognizer;
@@ -896,17 +861,68 @@
         }
     }
 
-    // Format Markdown safely
+    function cleanFormulasAndHtml(text) {
+        if (!text) return '';
+
+        let cleaned = text;
+
+        // 1. Remove raw HTML tags that LLM might mistakenly emit
+        cleaned = cleaned.replace(/<\/?(?:p|div|span|br|b|i|u|em|strong|table|thead|tbody|tr|th|td|font|center|small|big)\b[^>]*>/gi, ' ');
+
+        // 2. Decode common HTML entities
+        cleaned = cleaned
+            .replace(/&times;/gi, 'x')
+            .replace(/&divide;/gi, '/')
+            .replace(/&plusmn;/gi, '±')
+            .replace(/&le;/gi, '<=')
+            .replace(/&ge;/gi, '>=')
+            .replace(/&nbsp;/gi, ' ');
+
+        // 3. Convert pseudo-LaTeX bracketed formula blocks [ \text{...} ] or \[ ... \]
+        cleaned = cleaned.replace(/\\?\[\s*([\s\S]*?)\s*\\?\]/g, (match, formula) => {
+            if (/\\text|\\frac|\\times|\\cdot|;=;|\\;|=|\\over/i.test(formula)) {
+                let f = formula
+                    .replace(/\\text\{([^}]+)\}/g, '$1')
+                    .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '($1 / $2)')
+                    .replace(/\\times/g, 'x')
+                    .replace(/\\cdot/g, 'x')
+                    .replace(/;\s*=\s*;/g, '=')
+                    .replace(/\\;/g, ' ')
+                    .replace(/\\,/g, ' ')
+                    .replace(/\\\s+/g, ' ')
+                    .replace(/\\/g, '')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+                return `\n\n\`${f}\`\n\n`;
+            }
+            return match;
+        });
+
+        // 4. Clean leftover inline LaTeX commands outside brackets
+        cleaned = cleaned
+            .replace(/\\text\{([^}]+)\}/g, '$1')
+            .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '($1 / $2)')
+            .replace(/\\times/g, 'x')
+            .replace(/\\cdot/g, 'x')
+            .replace(/;\s*=\s*;/g, '=')
+            .replace(/\\;/g, ' ')
+            .replace(/\\,/g, ' ')
+            .replace(/\\\s+/g, ' ');
+
+        return cleaned;
+    }
+
     function formatMarkdown(text) {
         if (!text) return '';
+        const sanitized = cleanFormulasAndHtml(text);
         if (window.marked) {
-            const rawHtml = window.marked.parse(text);
+            const rawHtml = window.marked.parse(sanitized);
             if (window.DOMPurify) {
                 return window.DOMPurify.sanitize(rawHtml);
             }
             return rawHtml;
         }
-        return escapeHtml(text);
+        return escapeHtml(sanitized);
     }
 
     function escapeHtml(str) {
@@ -919,7 +935,6 @@
             .replace(/'/g, '&#039;');
     }
 
-    // Handle Form Submit & Messaging
     async function handleUserSubmit(e) {
         if (e) e.preventDefault();
         const text = DOM.userInput.value.trim();
@@ -931,13 +946,11 @@
             session = getActiveSession();
         }
 
-        // Set session title if first user message
         if (session.messages.length === 0) {
             session.title = text.slice(0, 32) + (text.length > 32 ? '...' : '');
             renderSessionList();
         }
 
-        // Append User Message
         const userMsg = {
             role: 'user',
             content: text,
@@ -947,16 +960,13 @@
         saveSessions();
         appendMessageToUI(userMsg, session.messages.length - 1);
 
-        // Reset input
         DOM.userInput.value = '';
         DOM.userInput.style.height = 'auto';
         scrollToBottom();
 
-        // Send to Backend with full legal citations (/api/chat)
         await handleStandardQuery(text, session);
     }
 
-    // Standard JSON Query (/api/chat)
     async function handleStandardQuery(question, session) {
         setGeneratingState(true);
         const thinkingEl = createThinkingPlaceholder();
@@ -983,7 +993,7 @@
 
             if (!resp.ok) {
                 const errDetail = await resp.text();
-                throw new Error(`Server status ${resp.status}: ${errDetail}`);
+                throw new Error(`Status ${resp.status}: ${errDetail}`);
             }
 
             const data = await resp.json();
@@ -1016,29 +1026,22 @@
         }
     }
 
-    // Thinking Indicator with Grounded Legal Scale Accent
     function createThinkingPlaceholder() {
         const el = document.createElement('div');
         el.className = 'w-full max-w-4xl mx-auto py-3 px-2 sm:px-4';
         el.innerHTML = `
             <div class="flex items-start gap-3">
-                <div class="w-8 h-8 rounded-full bg-[#022119] border border-[#04e797]/40 text-[#04e797] font-bold flex items-center justify-center shrink-0 shadow-md shadow-[#04e797]/15">
+                <div class="w-8 h-8 rounded-full bg-[#022119] border border-[#04e797]/40 text-[#04e797] font-bold flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(4,231,151,0.2)]">
                     <i data-lucide="scale" class="w-4 h-4 text-[#04e797]"></i>
                 </div>
-                <div class="glass-card rounded-2xl rounded-tl-sm p-4 sm:p-5 shadow-lg max-w-md w-full border border-[#04e797]/30 bg-[#022119] relative overflow-hidden">
-                    <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#04e797] via-cyan-400 to-transparent animate-pulse"></div>
+                <div class="rounded-2xl p-4 sm:p-5 max-w-md w-full border border-[#04e797]/25 bg-[#022119] shadow-[0_8px_30px_rgba(0,20,15,0.5)]">
                     <div class="flex items-center gap-2 mb-3">
-                        <div class="flex items-center gap-1">
-                            <span class="w-2 h-2 rounded-full bg-[#04e797] animate-ping"></span>
-                            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
-                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                        </div>
-                        <span class="text-xs font-semibold text-[#04e797]">Mencari rujukan pasal PP No. 35/2021 & menalar...</span>
+                        <span class="text-xs font-semibold text-[#04e797]">Mencari rujukan pasal PP No. 35/2021...</span>
                     </div>
                     <div class="space-y-2">
-                        <div class="h-3 rounded-md skeleton-shimmer w-3/4"></div>
-                        <div class="h-3 rounded-md skeleton-shimmer w-full"></div>
-                        <div class="h-3 rounded-md skeleton-shimmer w-5/6"></div>
+                        <div class="h-3 rounded skeleton-shimmer w-3/4"></div>
+                        <div class="h-3 rounded skeleton-shimmer w-full"></div>
+                        <div class="h-3 rounded skeleton-shimmer w-5/6"></div>
                     </div>
                 </div>
             </div>
@@ -1052,13 +1055,13 @@
         errorEl.className = 'w-full max-w-4xl mx-auto py-3 px-2 sm:px-4';
         errorEl.innerHTML = `
             <div class="flex items-start gap-3">
-                <div class="w-8 h-8 rounded-full bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-rose-600/30">
+                <div class="w-8 h-8 rounded-full bg-[#ef4444] text-white flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(239,68,68,0.3)]">
                     <i data-lucide="alert-triangle" class="w-4 h-4"></i>
                 </div>
-                <div class="glass-card rounded-2xl rounded-tl-sm p-4 border-rose-500/30 bg-rose-500/10 text-rose-300 text-sm max-w-lg">
-                    <div class="font-bold mb-1 text-rose-400">Gagal Menghubungi Mesin AI</div>
-                    <p class="text-xs leading-relaxed opacity-90">${escapeHtml(message)}</p>
-                    <div class="mt-2.5 pt-2 border-t border-rose-500/20 text-xs text-[#e0fff6]/60">
+                <div class="rounded-2xl p-4 border border-[#ef4444]/30 bg-[#ef4444]/10 text-[#e0fff6] text-sm max-w-lg shadow-[0_8px_30px_rgba(0,20,15,0.5)]">
+                    <div class="font-bold mb-1 text-[#ef4444]">Gagal Menghubungi Layanan AI</div>
+                    <p class="text-xs text-[#80a89d] leading-relaxed">${escapeHtml(message)}</p>
+                    <div class="mt-2.5 pt-2 border-t border-[#ef4444]/20 text-xs text-[#80a89d]">
                         Pastikan backend FastAPI sudah berjalan di terminal:
                         <code class="block mt-1 p-1.5 rounded bg-[#00140f] text-[#04e797] font-mono text-[11px] border border-[#04e797]/20">uvicorn backend.api:app --reload</code>
                     </div>
@@ -1089,10 +1092,9 @@
         setGeneratingState(false);
     }
 
-    // Source Reference Modal
     function openSourceModal(source) {
         if (!DOM.sourceModal || !DOM.sourceModalContent || !DOM.sourceModalTitle) return;
-        DOM.sourceModalTitle.textContent = `${source.source} — Halaman ${source.page}`;
+        DOM.sourceModalTitle.textContent = `${source.source}: Halaman ${source.page}`;
         DOM.sourceModalContent.textContent = source.snippet;
         DOM.sourceModal.classList.remove('hidden');
     }
@@ -1101,14 +1103,12 @@
         if (DOM.sourceModal) DOM.sourceModal.classList.add('hidden');
     }
 
-    // Auto resize textarea
     function autoResizeTextarea() {
         DOM.userInput.style.height = 'auto';
         const newHeight = Math.min(DOM.userInput.scrollHeight, 180);
         DOM.userInput.style.height = newHeight + 'px';
     }
 
-    // Mobile Sidebar Drawer
     function openMobileSidebar() {
         DOM.sidebar.classList.remove('-translate-x-full');
         DOM.sidebarBackdrop.classList.remove('hidden');
@@ -1119,7 +1119,6 @@
         DOM.sidebarBackdrop.classList.add('hidden');
     }
 
-    // Export Chat to Markdown
     function exportChatAsMarkdown() {
         const session = getActiveSession();
         if (!session || session.messages.length === 0) {
@@ -1132,9 +1131,9 @@
 
         session.messages.forEach(msg => {
             if (msg.role === 'user') {
-                md += `### 👤 Pertanyaan:\n${msg.content}\n\n`;
+                md += `### Pertanyaan:\n${msg.content}\n\n`;
             } else {
-                md += `### 💼 Jawaban KawanKerja AI:\n${msg.content}\n\n`;
+                md += `### Jawaban KawanKerja AI:\n${msg.content}\n\n`;
                 if (msg.sources && msg.sources.length > 0) {
                     md += `**Rujukan Dokumen:**\n`;
                     msg.sources.forEach(s => {
@@ -1155,7 +1154,6 @@
         URL.revokeObjectURL(url);
     }
 
-    // Settings Modal
     function openSettingsModal() {
         DOM.settingsBackendUrl.value = AppState.backendUrl;
         DOM.settingsPingResult.textContent = '';
@@ -1168,7 +1166,7 @@
 
     async function testBackendPing() {
         DOM.settingsPingResult.textContent = 'Mengecek koneksi...';
-        DOM.settingsPingResult.className = 'text-xs text-amber-400 font-bold';
+        DOM.settingsPingResult.className = 'text-xs text-[#f59e0b] font-bold';
 
         const testUrl = DOM.settingsBackendUrl.value.trim().replace(/\/$/, '');
         const start = Date.now();
@@ -1176,15 +1174,15 @@
             const res = await fetch(`${testUrl}/health`, { signal: AbortSignal.timeout(3500) });
             if (res.ok) {
                 const latency = Date.now() - start;
-                DOM.settingsPingResult.textContent = `✅ Tersambung (${latency}ms)`;
+                DOM.settingsPingResult.textContent = `Tersambung (${latency}ms)`;
                 DOM.settingsPingResult.className = 'text-xs text-[#04e797] font-bold';
             } else {
-                DOM.settingsPingResult.textContent = `❌ Server merespons ${res.status}`;
-                DOM.settingsPingResult.className = 'text-xs text-rose-400 font-bold';
+                DOM.settingsPingResult.textContent = `Server merespons ${res.status}`;
+                DOM.settingsPingResult.className = 'text-xs text-[#ef4444] font-bold';
             }
         } catch (e) {
-            DOM.settingsPingResult.textContent = `❌ Gagal: ${e.message}`;
-            DOM.settingsPingResult.className = 'text-xs text-rose-400 font-bold';
+            DOM.settingsPingResult.textContent = `Gagal: ${e.message}`;
+            DOM.settingsPingResult.className = 'text-xs text-[#ef4444] font-bold';
         }
     }
 
@@ -1198,29 +1196,23 @@
         closeSettingsModal();
     }
 
-    // Calculator Modal & Bindings
     function initCalculator() {
-        // Tab switching
         const tabs = document.querySelectorAll('.calc-tab-btn');
         const contents = document.querySelectorAll('.calc-tab-content');
 
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 tabs.forEach(t => {
-                    t.classList.remove('active', 'border-[#04e797]', 'text-[#04e797]', 'border-amber-400', 'text-amber-300', 'border-rose-400', 'text-rose-300');
-                    t.classList.add('border-transparent', 'text-[#e0fff6]/60');
+                    t.classList.remove('active', 'border-[#10b981]', 'text-[#10b981]');
+                    t.classList.add('border-transparent', 'text-[#a1b8b0]');
+                    t.setAttribute('aria-selected', 'false');
                 });
 
-                const target = tab.dataset.target;
-                if (target === 'tab-pkwt') {
-                    tab.classList.add('active', 'border-[#04e797]', 'text-[#04e797]');
-                } else if (target === 'tab-lembur') {
-                    tab.classList.add('active', 'border-amber-400', 'text-amber-300');
-                } else {
-                    tab.classList.add('active', 'border-rose-400', 'text-rose-300');
-                }
-                tab.classList.remove('border-transparent', 'text-[#e0fff6]/60');
+                tab.classList.add('active', 'border-[#10b981]', 'text-[#10b981]');
+                tab.classList.remove('border-transparent', 'text-[#a1b8b0]');
+                tab.setAttribute('aria-selected', 'true');
 
+                const target = tab.dataset.target;
                 contents.forEach(c => {
                     if (c.id === target) c.classList.remove('hidden');
                     else c.classList.add('hidden');
@@ -1228,7 +1220,7 @@
             });
         });
 
-        // 1. PKWT Calc (Modal)
+        // PKWT Calc
         const pkwtMonths = document.getElementById('calc-pkwt-months');
         const pkwtWage = document.getElementById('calc-pkwt-wage');
         const pkwtResult = document.getElementById('calc-pkwt-result');
@@ -1258,7 +1250,7 @@
             });
         }
 
-        // 2. Overtime Calc (Amber Theme)
+        // Overtime Calc
         const otWage = document.getElementById('calc-ot-wage');
         const otHours = document.getElementById('calc-ot-hours');
         const otType = document.getElementById('calc-ot-type');
@@ -1295,7 +1287,7 @@
             });
         }
 
-        // 3. Severance PHK Calc (Rose Theme)
+        // Severance PHK Calc
         const phkYears = document.getElementById('calc-phk-years');
         const phkWage = document.getElementById('calc-phk-wage');
         const phkReason = document.getElementById('calc-phk-reason');
@@ -1310,7 +1302,7 @@
             const res = window.LegalCalculator.calculateSeverance(y, w, mult);
 
             phkResult.textContent = window.LegalCalculator.formatRupiah(res.totalEstimate);
-            phkDetail.textContent = `Pesangon (${res.pesangonMonths} bln × ${mult}x): ${window.LegalCalculator.formatRupiah(res.totalPesangon)} | UPMK (${res.upmkMonths} bln): ${window.LegalCalculator.formatRupiah(res.totalUPMK)}`;
+            phkDetail.textContent = `Pesangon (${res.pesangonMonths} bln x ${mult}x): ${window.LegalCalculator.formatRupiah(res.totalPesangon)} | UPMK (${res.upmkMonths} bln): ${window.LegalCalculator.formatRupiah(res.totalUPMK)}`;
         }
 
         if (phkYears && phkWage && phkReason) {
@@ -1330,7 +1322,7 @@
             });
         }
 
-        // 4. Landing Page Embedded Calculator
+        // Landing Page Embedded Calculator
         const lMonths = document.getElementById('landing-calc-months');
         const lWage = document.getElementById('landing-calc-wage');
         const lResult = document.getElementById('landing-calc-result');
@@ -1362,7 +1354,6 @@
 
     // Setup Event Listeners
     function setupEventListeners() {
-        // Landing navigation & Enter Chat buttons
         document.querySelectorAll('.enter-chat-btn').forEach(btn => {
             btn.addEventListener('click', () => switchToChatView());
         });
@@ -1378,7 +1369,6 @@
             DOM.backToLandingBtn.addEventListener('click', switchToLandingView);
         }
 
-        // Scroll-to-bottom floating button
         if (DOM.chatContainer && DOM.scrollBottomBtn) {
             DOM.chatContainer.addEventListener('scroll', () => {
                 const distFromBottom = DOM.chatContainer.scrollHeight - DOM.chatContainer.scrollTop - DOM.chatContainer.clientHeight;
@@ -1394,12 +1384,10 @@
             });
         }
 
-        // Sidebar & Session
         DOM.newChatBtn.addEventListener('click', createNewSession);
         DOM.mobileSidebarBtn.addEventListener('click', openMobileSidebar);
         DOM.sidebarBackdrop.addEventListener('click', closeMobileSidebar);
 
-        // Clear Chat
         DOM.clearChatBtn.addEventListener('click', () => {
             const session = getActiveSession();
             if (session && confirm('Hapus semua pesan dalam percakapan ini?')) {
@@ -1409,10 +1397,8 @@
             }
         });
 
-        // Export Chat
         DOM.exportChatBtn.addEventListener('click', exportChatAsMarkdown);
 
-        // Chat Form
         DOM.chatForm.addEventListener('submit', handleUserSubmit);
         DOM.userInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -1422,13 +1408,9 @@
         });
         DOM.userInput.addEventListener('input', autoResizeTextarea);
 
-        // Stop generation
         DOM.stopBtn.addEventListener('click', stopGeneration);
-
-        // Mic
         DOM.micBtn.addEventListener('click', toggleSpeechRecognition);
 
-        // Modals
         DOM.calcOpenBtn.addEventListener('click', () => DOM.calcModal.classList.remove('hidden'));
         DOM.calcCloseBtn.addEventListener('click', () => DOM.calcModal.classList.add('hidden'));
         DOM.settingsOpenBtn.addEventListener('click', openSettingsModal);
@@ -1437,7 +1419,6 @@
         DOM.settingsSaveBtn.addEventListener('click', saveSettings);
         DOM.sourceModalClose.addEventListener('click', closeSourceModal);
 
-        // Quick prompt chips in welcome hero & quick consultation
         document.querySelectorAll('.quick-prompt-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const prompt = btn.getAttribute('data-prompt') || btn.innerText.trim();
@@ -1452,6 +1433,16 @@
             if (e.target === DOM.calcModal) DOM.calcModal.classList.add('hidden');
             if (e.target === DOM.settingsModal) DOM.settingsModal.classList.add('hidden');
             if (e.target === DOM.sourceModal) DOM.sourceModal.classList.add('hidden');
+        });
+
+        // Close modals and mobile sidebar on Escape key (R-26, R-32)
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (DOM.calcModal && !DOM.calcModal.classList.contains('hidden')) DOM.calcModal.classList.add('hidden');
+                if (DOM.settingsModal && !DOM.settingsModal.classList.contains('hidden')) DOM.settingsModal.classList.add('hidden');
+                if (DOM.sourceModal && !DOM.sourceModal.classList.contains('hidden')) DOM.sourceModal.classList.add('hidden');
+                closeMobileSidebar();
+            }
         });
 
         // Browser Hash Navigation
@@ -1474,7 +1465,6 @@
         initLegalHeroAnimation();
         setupEventListeners();
 
-        // Load or create initial session
         if (AppState.sessions.length === 0) {
             createNewSession();
         } else {
@@ -1483,22 +1473,18 @@
             renderMessages();
         }
 
-        // Route check on load
         if (window.location.hash === '#chat') {
             switchToChatView();
         } else {
             switchToLandingView();
         }
 
-        // Check backend health immediately and every 30s
         checkBackendHealth();
         setInterval(checkBackendHealth, 30000);
 
-        // Create lucide icons
         if (window.lucide) window.lucide.createIcons();
     }
 
-    // Run on DOM ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
