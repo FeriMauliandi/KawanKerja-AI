@@ -6,7 +6,7 @@ pydantic
 requests
 pandas
 datasets
-ragas
+ragas==0.4.3
 torch
 langchain
 langchain-core
@@ -21,3 +21,11 @@ pypdf
 beautifulsoup4
 sentence-transformers
 rank_bm25
+# RAGAS 0.4.3 imports its legacy Vertex AI compatibility path.
+langchain-google-vertexai==3.3.0
+# Keep ChromaDB's OpenTelemetry packages aligned.
+opentelemetry-api==1.45.2
+opentelemetry-sdk==1.45.2
+opentelemetry-exporter-otlp-proto-common==1.45.2
+opentelemetry-exporter-otlp-proto-grpc==1.45.2
+opentelemetry-proto==1.45.2

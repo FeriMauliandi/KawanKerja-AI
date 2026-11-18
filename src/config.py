@@ -15,7 +15,7 @@ OPENROUTER_BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/ap
 
 # Model konfigurasi default
 LLM_MODEL_NAME = os.getenv("LLM_MODEL", "openai/gpt-oss-20b")
-LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.2"))
+LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.1"))
 
 # Embedding: Google AI Studio Gemini Embedding 1
 EMBEDDING_MODEL_NAME = os.getenv("EMBEDDING_MODEL", "models/gemini-embedding-001")

@@ -150,6 +150,9 @@ def create_rag_chain(return_docs: bool = False, retriever=None, llm=None):
         return {
             "answer": data["answer"],
             "sources": data["sources"],
+            # RAGAS needs the complete retrieved contexts, not only the
+            # shortened citation snippets exposed to the UI.
+            "contexts": [doc.page_content for doc in data["docs"]],
             "standalone_question": data["standalone_question"]
         }
 

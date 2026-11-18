@@ -208,9 +208,20 @@ pytest -q
 
 ### Menjalankan Evaluasi RAGAS (Empirical Benchmark)
 ```bash
-python eval.py
+python scripts/eval.py
 ```
 Hasil metrik (*Faithfulness*, *Answer Relevancy*, *Context Precision*, *Context Recall*) otomatis tersimpan ke `eval_report.csv`.
+
+Untuk smoke test tanpa menjalankan seluruh dataset:
+
+```bash
+python scripts/eval.py --limit 1
+```
+
+Evaluasi memerlukan `GROQ_API_KEY` untuk LLM generator/juri dan
+`GOOGLE_API_KEY` (atau `GEMINI_API_KEY`) untuk embedding. Pastikan versi
+RAGAS dan LangChain yang terpasang kompatibel; jika import RAGAS gagal,
+buat ulang virtual environment lalu instal dependency dari file requirements.
 
 ---
 
