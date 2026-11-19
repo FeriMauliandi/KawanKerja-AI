@@ -15,17 +15,16 @@ dependencies = [
     "python-dotenv",
     "pydantic",
     "requests",
-    "torch",
     "langchain",
     "langchain-core",
     "langchain-community",
     "langchain-classic",
     "langchain-chroma",
     "langchain-groq",
-    "langchain-huggingface",
+    "langchain-google-genai",
     "chromadb",
     "pypdf",
-    "sentence-transformers",
+    "beautifulsoup4",
     "rank_bm25"
 ]
 
@@ -35,9 +34,10 @@ dev = [
     "pytest-asyncio",
     "pytest-cov",
     "httpx",
-    "ragas",
+    "ragas==0.4.3",
     "datasets",
-    "pandas"
+    "pandas",
+    "langchain-google-vertexai==3.3.0"
 ]
 
 [tool.setuptools.packages.find]

@@ -4,10 +4,6 @@ uvicorn[standard]
 python-dotenv
 pydantic
 requests
-pandas
-datasets
-ragas==0.4.3
-torch
 langchain
 langchain-core
 langchain-community
@@ -15,14 +11,10 @@ langchain-classic
 langchain-chroma
 langchain-groq
 langchain-google-genai
-langchain-huggingface
 chromadb
 pypdf
 beautifulsoup4
-sentence-transformers
 rank_bm25
-# RAGAS 0.4.3 imports its legacy Vertex AI compatibility path.
-langchain-google-vertexai==3.3.0
 # Keep ChromaDB's OpenTelemetry packages aligned.
 opentelemetry-api==1.45.2
 opentelemetry-sdk==1.45.2

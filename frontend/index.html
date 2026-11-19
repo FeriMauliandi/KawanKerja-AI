@@ -141,8 +141,8 @@
                             <i data-lucide="layers" class="w-4 h-4"></i>
                         </div>
                         <div>
-                            <div class="font-bold text-xs text-[#e0fff6]">Hybrid Retrieval</div>
-                            <div class="text-[10px] text-[#80a89d]">BM25 + Vektor ChromaDB</div>
+                            <div class="font-bold text-xs text-[#e0fff6]">Hybrid + Exact-Pasal</div>
+                            <div class="text-[10px] text-[#80a89d]">BM25 + Vektor + Rujukan Pasal</div>
                         </div>
                     </div>
 
@@ -151,8 +151,8 @@
                             <i data-lucide="filter" class="w-4 h-4"></i>
                         </div>
                         <div>
-                            <div class="font-bold text-xs text-[#e0fff6]">Cross-Encoder</div>
-                            <div class="text-[10px] text-[#80a89d]">Reranker NVIDIA-Nemotron</div>
+                            <div class="font-bold text-xs text-[#e0fff6]">RRF + Diversifikasi</div>
+                            <div class="text-[10px] text-[#80a89d]">Reranker neural opsional</div>
                         </div>
                     </div>
 
@@ -386,9 +386,9 @@
                     <div class="w-12 h-12 rounded-xl bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 flex items-center justify-center mb-5">
                         <i data-lucide="database" class="w-6 h-6"></i>
                     </div>
-                    <h3 class="text-lg font-bold text-[#e0fff6] mb-2">Hybrid Retrieval (BM25 + ChromaDB)</h3>
+                    <h3 class="text-lg font-bold text-[#e0fff6] mb-2">Hybrid Retrieval + Exact-Pasal Resolver</h3>
                     <p class="text-xs text-[#80a89d] leading-relaxed flex-1">
-                        Menggabungkan pencarian kata kunci presisi tinggi (BM25) untuk nomor pasal dan istilah hukum spesifik dengan pencarian vektor semantik (ChromaDB) untuk memahami inti pertanyaan pekerja.
+                        Menggabungkan BM25 untuk nomor pasal dan istilah hukum spesifik, pencarian vektor ChromaDB untuk memahami inti pertanyaan, serta resolver yang memindai seluruh korpus untuk rujukan eksplisit seperti "Pasal 26 ayat (1)".
                     </p>
                 </div>
 
@@ -396,9 +396,9 @@
                     <div class="w-12 h-12 rounded-xl bg-[#04e797]/15 text-[#04e797] border border-[#04e797]/30 flex items-center justify-center mb-5">
                         <i data-lucide="layers" class="w-6 h-6"></i>
                     </div>
-                    <h3 class="text-lg font-bold text-[#e0fff6] mb-2">Cross-Encoder Reranker</h3>
+                    <h3 class="text-lg font-bold text-[#e0fff6] mb-2">Reciprocal Rank Fusion (RRF)</h3>
                     <p class="text-xs text-[#80a89d] leading-relaxed flex-1">
-                        Menyortir dan memfilter konteks paling relevan menggunakan model cross-encoder sebelum diserahkan ke model bahasa, memastikan hanya regulasi terkait yang digunakan dalam jawaban.
+                        Menggabungkan ranking BM25, dense, dan exact-pasal tanpa menormalkan skor yang berbeda skala, lalu mendeduplikasi dan membatasi maksimal 2 chunk per halaman. Reranker neural tersedia sebagai opsi.
                     </p>
                 </div>
 
@@ -606,7 +606,7 @@
                     <div class="text-[11px] space-y-1.5">
                         <div class="flex items-center justify-between">
                             <span class="text-[#80a89d]">Model Generator:</span>
-                            <span class="font-mono font-bold text-[#e0fff6]">Qwen 27B</span>
+                            <span class="font-mono font-bold text-[#e0fff6]">GPT-OSS 20B</span>
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-[#80a89d]">Akselerasi:</span>
@@ -614,7 +614,7 @@
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-[#80a89d]">Pencarian:</span>
-                            <span class="font-bold text-[#e0fff6]">BM25 + ChromaDB</span>
+                            <span class="font-bold text-[#e0fff6]">Hybrid + Exact-Pasal</span>
                         </div>
                     </div>
                 </div>

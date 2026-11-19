@@ -8,7 +8,7 @@ __pycache__/
 .ruff_cache/
 
 chroma_db/
-eval_report.csv
+eval_report*.csv
 
 .venv/
 venv/

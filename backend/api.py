@@ -12,6 +12,7 @@ root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if root_dir not in sys.path:
     sys.path.append(root_dir)
 
+from src.config import LLM_MODEL_NAME
 from src.generation.chain import create_rag_chain
 from backend.schemas import QueryRequest, SourceItem, QueryResponse
 
@@ -20,7 +21,7 @@ ml_models = {}
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("Memuat KawanKerja RAG Chain (Groq Qwen 3.8 27B) ke dalam memori...")
+    print(f"Memuat KawanKerja RAG Chain (Groq: {LLM_MODEL_NAME}) ke dalam memori...")
     try:
         ml_models["rag_chain"] = create_rag_chain(return_docs=True)
         print("Sistem KawanKerja AI siap menerima request!")
@@ -35,16 +36,23 @@ async def lifespan(app: FastAPI):
 # ======fastapi app initialization========
 app = FastAPI(
     title="KawanKerja AI Engine",
-    description="API Asisten Regulasi Ketenagakerjaan Indonesia (PP No. 35 Tahun 2021) bertenaga Groq Qwen 3.8 27B, Gemini Embedding, dan NVIDIA Nemotron 3.5 Reranker",
+    description="API Asisten Regulasi Ketenagakerjaan Indonesia (PP No. 35 Tahun 2021) bertenaga Groq GPT-OSS, Gemini Embedding, Hybrid Retrieval (BM25 + Dense + Exact-Pasal + RRF), dan reranker neural opsional",
     version="1.0.0",
     lifespan=lifespan
 )
 
-# Aktifkan CORS agar frontend (Streamlit / React / Vue) bisa mengakses API tanpa blokir browser
+# Aktifkan CORS agar frontend (Streamlit / React / Vue) bisa mengakses API.
+# Browser menolak kombinasi origin "*" dengan credentials, jadi credentials
+# hanya diaktifkan jika origin dibatasi lewat CORS_ALLOW_ORIGINS.
+_cors_origins = [
+    origin.strip()
+    for origin in os.getenv("CORS_ALLOW_ORIGINS", "*").split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=_cors_origins,
+    allow_credentials=_cors_origins != ["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -60,8 +68,8 @@ async def root():
         "service": "KawanKerja AI Engine",
         "status": "online",
         "documentation": "/docs",
-        "llm_provider": "Groq (qwen/qwen3.8-27b)",
-        "features": ["LCEL Pipeline", "Hybrid Retrieval", "Cross-Encoder Reranker", "Multi-Turn Conversational Memory"],
+        "llm_provider": f"Groq ({LLM_MODEL_NAME})",
+        "features": ["LCEL Pipeline", "Hybrid Retrieval (BM25 + Dense + Exact-Pasal + RRF)", "Optional Neural Reranker", "Multi-Turn Conversational Memory"],
         "regulation_base": "PP No. 35 Tahun 2021"
     }
 

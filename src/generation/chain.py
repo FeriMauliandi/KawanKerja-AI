@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 from operator import itemgetter
@@ -21,11 +22,21 @@ root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
 if root_dir not in sys.path:
     sys.path.append(root_dir)
 
-from src.config import LLM_MODEL_NAME, LLM_TEMPERATURE
-from src.retrieval.retriever import get_advanced_retriever
+from src.config import (
+    LLM_MODEL_NAME,
+    LLM_TEMPERATURE,
+    RETRIEVAL_FETCH_K,
+    RETRIEVAL_FINAL_K,
+)
+from src.retrieval.retriever import (
+    build_citation_snippet,
+    clean_pdf_artifacts,
+    get_advanced_retriever,
+)
 from src.generation.prompt import get_rag_prompt, get_contextualize_prompt
 
 load_dotenv()
+logger = logging.getLogger(__name__)
 
 
 def get_groq_llm(model_name: str = LLM_MODEL_NAME, temperature: float = LLM_TEMPERATURE) -> ChatGroq:
@@ -63,14 +74,18 @@ def normalize_chat_history(history: List[Any]) -> List[BaseMessage]:
 
 def format_docs(docs: List[Document]) -> str:
     """Menggabungkan teks konteks dokumen untuk dimasukkan ke dalam prompt."""
-    print("\n" + "="*50)
-    print("[DEBUG] DOKUMEN YANG DITARIK RETRIEVER:")
-    for i, doc in enumerate(docs):
-        sumber = doc.metadata.get('source', 'Sumber tidak diketahui')
-        page = doc.metadata.get('page', '-')
-        print(f"  [{i+1}] Dari: {sumber} (Hal: {page})")
-    print("="*50 + "\n")
-    return "\n\n".join(doc.page_content for doc in docs)
+    logger.debug(
+        "Mengirim %d konteks ke prompt: %s",
+        len(docs),
+        [
+            (
+                os.path.basename(doc.metadata.get("source", "?")),
+                doc.metadata.get("page", "-"),
+            )
+            for doc in docs
+        ],
+    )
+    return "\n\n".join(clean_pdf_artifacts(doc.page_content) for doc in docs)
 
 
 def extract_sources(docs: List[Document]) -> List[Dict[str, Any]]:
@@ -88,7 +103,7 @@ def extract_sources(docs: List[Document]) -> List[Dict[str, Any]]:
         sources.append({
             "source": os.path.basename(doc.metadata.get("source", "PP_No_35_Tahun_2021.pdf")),
             "page": page_display,
-            "snippet": doc.page_content[:250].strip()
+            "snippet": build_citation_snippet(doc.page_content, max_chars=500)
         })
     return sources
 
@@ -100,7 +115,7 @@ def create_rag_chain(return_docs: bool = False, retriever=None, llm=None):
     Arsitektur LCEL:
       1. NormalizeInput: Parsing input string/dict & konversi history ke BaseMessage
       2. ReformulateQuery: RunnableBranch untuk kontekstualisasi pertanyaan jika ada history
-      3. RetrieveDocuments: Retriever terintegrasi via LCEL pipe (itemgetter -> retriever)
+      3. RetrieveDocuments: Hybrid BM25 + dense + exact-pasal + RRF + rerank
       4. PrepareContext & Sources: Ekstraksi teks konteks dan metadata sitasi
       5. GenerateAnswer: PromptTemplate | ChatGroq | StrOutputParser
       6. FormatOutput: Pemilihan format keluaran sesuai parameter `return_docs`
@@ -111,7 +126,12 @@ def create_rag_chain(return_docs: bool = False, retriever=None, llm=None):
     if llm is None:
         llm = get_groq_llm()
     if retriever is None:
-        retriever = get_advanced_retriever(llm=llm, search_type="similarity", final_k=3, fetch_k=5)
+        retriever = get_advanced_retriever(
+            llm=llm,
+            search_type="similarity",
+            final_k=RETRIEVAL_FINAL_K,
+            fetch_k=RETRIEVAL_FETCH_K,
+        )
 
     rag_prompt = get_rag_prompt()
     contextualize_prompt = get_contextualize_prompt()

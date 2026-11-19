@@ -85,9 +85,9 @@ EVALUATION_QUESTIONS = [
     },
     {
         "question": "Apakah perusahaan alih daya (outsourcing) wajib berbadan hukum perseroan terbatas?",
-        # TODO: verifikasi ke teks Pasal 19 PP 35/2021 -- setahu saya bunyinya
-        # "berbentuk badan hukum" (bukan spesifik "perseroan terbatas").
-        "ground_truth": "Ya, berdasarkan Pasal 19 PP 35/2021, perusahaan alih daya harus berbentuk badan hukum perseroan terbatas dan wajib memenuhi perizinan berusaha yang diterbitkan oleh pemerintah pusat.",
+        # Teks resmi Pasal 20 ayat (1) hanya mensyaratkan "berbentuk badan
+        # hukum", tidak spesifik perseroan terbatas.
+        "ground_truth": "Tidak harus perseroan terbatas. Berdasarkan Pasal 20 ayat (1) PP 35/2021, Perusahaan Alih Daya harus berbentuk badan hukum dan wajib memenuhi perizinan berusaha yang diterbitkan oleh Pemerintah Pusat; ketentuan tersebut tidak menyebut secara khusus perseroan terbatas.",
         "in_scope": True,
     },
     {
@@ -161,6 +161,8 @@ def run_evaluation(output_path="eval_report.csv", limit=None):
         ChatGroq(
             model_name=LLM_MODEL_NAME,
             temperature=0.0,
+            max_tokens=2048,
+            max_retries=3,
             groq_api_key=os.getenv("GROQ_API_KEY"),
         )
     )

@@ -2,7 +2,7 @@
 # 💼 KawanKerja AI: Asisten Regulasi Ketenagakerjaan Indonesia (PP No. 35 Tahun 2021)
 
 [![Python](https://img.shields.io/badge/Python-3.12-blue.svg?logo=python)](https://python.org)
-[![Groq](https://img.shields.io/badge/LLM-Qwen%203.8%2027B%20via%20Groq-f55036.svg)](https://groq.com)
+[![Groq](https://img.shields.io/badge/LLM-GPT--OSS%2020B%20via%20Groq-f55036.svg)](https://groq.com)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg?logo=fastapi)](https://fastapi.tiangolo.com)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.35+-FF4B4B.svg?logo=streamlit)](https://streamlit.io)
 [![LangChain](https://img.shields.io/badge/LangChain-v0.3-orange.svg)](https://langchain.com)
@@ -13,7 +13,7 @@
 
 > **KawanKerja AI** adalah sistem Retrieval-Augmented Generation (RAG) cerdas yang dirancang untuk menjawab konsultasi hak dan kewajiban kerja karyawan dan HR di Indonesia berdasarkan rujukan hukum resmi **Peraturan Pemerintah (PP) No. 35 Tahun 2021** (PKWT, Alih Daya, Waktu Kerja & Lembur, serta Pemutusan Hubungan Kerja).
 
-Sistem ini ditenagai oleh model open-weights mutakhir **Qwen 3.8 27B** dengan akselerasi inferensi ultra-cepat menggunakan **Groq LPU**, arsitektur **Hybrid Retrieval (BM25 + ChromaDB)**, **Cross-Encoder Reranker**, dan pelacakan observabilitas end-to-end via **LangSmith**.
+Sistem ini ditenagai oleh model open-weights **GPT-OSS 20B** (`openai/gpt-oss-20b`, dapat diganti lewat `LLM_MODEL`) dengan akselerasi inferensi ultra-cepat menggunakan **Groq LPU**, arsitektur **Hybrid Retrieval (BM25 + ChromaDB) + Exact-Pasal Resolver + Reciprocal Rank Fusion (RRF)**, reranker neural opsional, dan pelacakan observabilitas end-to-end via **LangSmith**.
 
 ---
 
@@ -27,7 +27,7 @@ Regulasi ketenagakerjaan di Indonesia (khususnya turunan UU Cipta Kerja pada PP 
 3. User tidak dapat memverifikasi sumber asli regulasi.
 
 **Keunggulan KawanKerja AI:**
-Mengintegrasikan **Hybrid Search (BM25 + Dense Vector Search)** dengan **Cross-Encoder Reranker** untuk menjamin akurasi rujukan pasal, dilengkapi guardrails anti-halusinasi dan ekstraksi sitasi halaman dokumen secara transparan.
+Mengintegrasikan **Hybrid Search (BM25 + Dense Vector Search)**, **Exact-Pasal Resolver**, dan **Reciprocal Rank Fusion** untuk menjamin akurasi rujukan pasal, dilengkapi reranker neural opsional, guardrails anti-halusinasi, dan ekstraksi sitasi halaman dokumen secara transparan.
 
 ---
 
@@ -43,14 +43,16 @@ flowchart TD
     end
 
     subgraph QUERY["2. Pipeline Advanced Retrieval & Generation"]
-        UserQuery(["Pertanyaan Pengguna"]) --> MultiQ["MultiQueryRetriever (Query Expansion)"]
-        MultiQ --> BM25["Sparse Retriever (BM25)"]
-        MultiQ --> Dense["Dense Retriever (ChromaDB)"]
-        BM25 & Dense --> Ensemble["EnsembleRetriever (Hybrid Search 50:50)"]
-        Ensemble --> Rerank["Neural Reranker (NVIDIA Nemotron 3.5 Rerank 8B via OpenRouter)"]
-        Rerank --> Context["Top-K Konteks Grounded + Sitasi Halaman"]
+        UserQuery(["Pertanyaan Pengguna"]) --> Analyze["Analisis Query + Deteksi Pasal/Ayat"]
+        Analyze --> BM25["Sparse Retriever (BM25, k=25)"]
+        Analyze --> Dense["Dense Retriever (ChromaDB, k=25)"]
+        Analyze --> Exact["Exact-Pasal Resolver (scan 101 chunk)"]
+        BM25 & Dense & Exact --> RRF["Reciprocal Rank Fusion + Deduplikasi"]
+        RRF --> Rerank["Reranker Neural (opsional, default off)"]
+        Rerank --> Diversify["Diversifikasi: maks. 2 chunk/halaman"]
+        Diversify --> Context["5 Konteks Grounded + Sitasi Halaman"]
         Context --> PromptTemplate["Prompt Guardrail Hukum"]
-        PromptTemplate --> LLM["Groq LPU: Qwen 3.8 27B"]
+        PromptTemplate --> LLM["Groq LPU: GPT-OSS 20B"]
         LLM --> FinalAnswer(["Jawaban Terstruktur + Referensi Pasal & Halaman"])
     end
 ```
@@ -60,20 +62,59 @@ flowchart TD
 ## 🚀 Fitur & Keunggulan Teknis
 
 1. **Inference Ultra-Cepat dengan Groq LPU**:
-   - Memanfaatkan model **Qwen 3.8 27B** yang di-host di infrastruktur Groq LPU untuk responsivitas instan tanpa jeda antrean.
-2. **Hybrid Retrieval (Sparse + Dense)**:
+   - Memanfaatkan model **GPT-OSS 20B** (`openai/gpt-oss-20b`) yang di-host di infrastruktur Groq LPU untuk responsivitas instan. Nama model dapat diganti kapan saja melalui variabel `LLM_MODEL` tanpa mengubah kode.
+2. **Hybrid Retrieval (Sparse + Dense + Exact-Pasal)**:
    - **BM25 Retriever** menangkap kata kunci istilah hukum yang presisi (contoh: *"PKWT"*, *"UPMK"*, *"Pasal 40"*).
    - **Dense ChromaDB Retriever** menangkap pemahaman makna semantik pertanyaan karyawan.
-3. **Neural Re-ranking (`NVIDIA Nemotron 3.5 Rerank 8B via OpenRouter`)**:
-   - Menyaring dan mengurutkan ulang dokumen kandidat dengan model reranker mutakhir NVIDIA Nemotron melalui OpenRouter API berkecepatan tinggi tanpa beban komputasi CPU lokal.
-4. **Query Expansion (`MultiQueryRetriever`)**:
-   - Mengubah satu pertanyaan awam menjadi beberapa variasi sudut pandang hukum untuk memaksimalkan *recall*.
-5. **Sitasi & Grounding Transparan**:
-   - Setiap respons menyertakan nomor halaman dan cuplikan pasal agar pekerja atau tim HR dapat langsung memverifikasi keaslian aturan.
-6. **Observability & Tracing (LangSmith Ready)**:
+   - **Exact-Pasal Resolver** memindai seluruh korpus (~101 chunk) untuk memastikan rujukan eksplisit seperti *"Pasal 26 ayat (1)"* tidak kalah oleh kemiripan semantik.
+3. **Reciprocal Rank Fusion (RRF) + Diversifikasi**:
+   - Menggabungkan ranking BM25, dense, dan exact-pasal tanpa perlu menormalkan skor yang berbeda skala.
+   - Deduplikasi chunk dan batas maksimal 2 chunk per halaman agar 5 konteks yang dikirim tidak redundan.
+4. **Reranker Neural Opsional**:
+   - Reranker cross-encoder (`cohere/rerank-v3.5`) via OpenRouter tersedia, tetapi **default dimatikan** pada korpus 101 chunk karena menambah latensi tanpa kenaikan MRR yang berarti (lihat evaluasi retrieval di bawah).
+5. **Query Expansion Kondisional**:
+   - Hanya aktif untuk pertanyaan pendek yang tidak mengandung istilah hukum, dan default dimatikan pada korpus kecil.
+6. **Sitasi & Grounding Transparan**:
+   - Setiap respons menyertakan nomor halaman dan cuplikan pasal; header halaman PDF dibersihkan agar sitasi tidak berubah menjadi *"Pasal 2021, No.45"*.
+7. **Observability & Tracing (LangSmith Ready)**:
    - Terintegrasi langsung dengan LangSmith untuk melacak latensi, token usage, dan kualitas retrieval step-by-step.
-7. **RAGAS Automated Evaluation**:
-   - Skrip benchmark kuantitatif untuk mengukur *Faithfulness* (89.3%), *Answer Relevancy* (79.0%), *Context Precision* (100.0%), dan *Context Recall* (83.3%) berdasarkan pengujian empiris pada [eval_report.csv](eval_report.csv).
+8. **Evaluasi Retrieval & RAGAS**:
+   - `scripts/eval_retrieval.py` mengukur Hit@5 dan MRR pada 16 pertanyaan berlabel pasal.
+   - `scripts/eval.py` mengukur *Faithfulness*, *Answer Relevancy*, *Context Precision*, dan *Context Recall* dengan RAGAS.
+
+---
+
+## 🔎 Strategi Retrieval (Disesuaikan untuk Korpus Kecil)
+
+Korpus saat ini hanya **2 PDF, 101 chunk, dan 68 pasal unik**. Pada skala ini, menambah banyak retriever atau memanggil LLM untuk query expansion di setiap request justru menambah latensi dan noise. Strategi yang dipakai:
+
+| Tahap | Nilai | Alasan |
+| :--- | :--- | :--- |
+| Kandidat BM25 | `k=25` | Menangkap nomor pasal dan istilah hukum eksplisit. |
+| Kandidat dense | `k=25` | Menangkap parafrase pertanyaan pekerja/HR. |
+| Exact-pasal resolver | scan 101 chunk | Memastikan "Pasal 26 ayat (1)" tidak kalah oleh chunk yang semantiknya mirip. |
+| Fusion | Weighted RRF (BM25 0.45 / dense 0.55) | Tidak perlu menormalkan skor BM25 vs cosine. |
+| Reranker | 20 kandidat, opsional | Default mati pada korpus ini; lihat hasil di bawah. |
+| Konteks akhir | 5 chunk, maks. 2 per halaman | Cukup untuk pasal yang terpotong, tanpa konteks redundan. |
+| Query expansion | Default mati | Baru relevan saat korpus dan variasi pertanyaan bertambah besar. |
+
+### Hasil Evaluasi Retrieval (16 pertanyaan berlabel pasal)
+
+| Retriever | Hit@5 | MRR | Latensi rata-rata |
+| :--- | :---: | :---: | :---: |
+| Dense-only (k=5) | 1.000 | 0.854 | 0.37 s |
+| BM25-only (k=5) | 1.000 | 0.734 | < 0.01 s |
+| **Hybrid RRF (default)** | **1.000** | **0.938** | **0.37 s** |
+| Hybrid + reranker | 1.000 | 0.938 | 4.54 s |
+
+> Hit@5 sudah saturasi pada korpus kecil ini; metrik yang membedakan adalah MRR (posisi konteks relevan pertama). Hybrid RRF menaikkan MRR dari 0.854 menjadi 0.938 tanpa menambah latensi berarti. Reranker tidak menaikkan MRR dan menambah ~4.2 detik, sehingga default-nya dimatikan. Aktifkan dengan `RETRIEVAL_ENABLE_RERANKER=true` jika korpus bertambah besar.
+
+Reproduksi:
+
+```bash
+python scripts/eval_retrieval.py --no-rerank   # hybrid RRF saja
+python scripts/eval_retrieval.py               # termasuk reranker
+```
 
 ---
 
@@ -87,7 +128,8 @@ flowchart TD
 │   └── app.py                    # Antarmuka Chat Streamlit
 ├── scripts/
 │   ├── ingest.py                 # Offline vector database indexing CLI
-│   └── eval.py                   # Skrip evaluasi benchmark kuantitatif RAGAS
+│   ├── eval.py                   # Evaluasi kuantitatif RAGAS
+│   └── eval_retrieval.py         # Evaluasi retrieval-only (Hit@5 & MRR)
 ├── data/
 │   ├── PP_No_35_Tahun_2021.pdf   # Batang Tubuh regulasi resmi
 │   └── Penjelasan_PP_No_35_...pdf# Penjelasan resmi pasal demi pasal
@@ -99,10 +141,10 @@ flowchart TD
 │   │   └── embedder.py           # Gemini Embedding (Google AI Studio)
 │   ├── retrieval/
 │   │   ├── vector_store.py       # ChromaDB abstraction
-│   │   └── retriever.py          # Hybrid (BM25 + Vector) + Nemotron 3.5 Reranker (OpenRouter)
+│   │   └── retriever.py          # BM25 + dense + exact-pasal + RRF (+ reranker opsional)
 │   └── generation/
 │       ├── prompt.py             # Prompt engineering dengan legal guardrails
-│       └── chain.py              # LangChain RAG Chain (Groq Qwen 3.8 27B)
+│       └── chain.py              # LangChain RAG Chain (Groq, model via LLM_MODEL)
 ├── tests/
 │   ├── test_api.py               # Unit & integration tests untuk API
 │   └── test_static_project.py    # Automated structural & guardrail tests
@@ -139,7 +181,13 @@ pip install -r requirements-dev.txt
 Buat file `.env` dan masukkan API Key:
 
 ```env
+# Wajib
 GROQ_API_KEY=gsk_...
+GOOGLE_API_KEY=AIzaSy...
+
+# Opsional: reranker neural (default off pada korpus 101 chunk)
+OPENROUTER_API_KEY=sk-or-...
+# RETRIEVAL_ENABLE_RERANKER=true
 
 # Opsional: LangSmith Tracing
 LANGSMITH_TRACING_V2=true
@@ -207,11 +255,17 @@ Kirim pertanyaan seputar aturan ketenagakerjaan.
 pytest -q
 ```
 
+### Menjalankan Evaluasi Retrieval (Hit@5 & MRR)
+```bash
+python scripts/eval_retrieval.py --no-rerank
+```
+Metrik ini tidak memanggil LLM generator, sehingga cocok untuk mengecek apakah perubahan chunking/retrieval benar-benar membantu sebelum menjalankan RAGAS.
+
 ### Menjalankan Evaluasi RAGAS (Empirical Benchmark)
 ```bash
 python scripts/eval.py
 ```
-Hasil metrik (*Faithfulness*, *Answer Relevancy*, *Context Precision*, *Context Recall*) otomatis tersimpan ke `eval_report.csv`.
+Hasil metrik (*Faithfulness*, *Answer Relevancy*, *Context Precision*, *Context Recall*) otomatis tersimpan ke file yang diberikan melalui `--output` (default: `eval_report.csv`).
 
 Untuk smoke test tanpa menjalankan seluruh dataset:
 
@@ -219,12 +273,14 @@ Untuk smoke test tanpa menjalankan seluruh dataset:
 python scripts/eval.py --limit 1
 ```
 
-Evaluasi memerlukan `GROQ_API_KEY` untuk LLM generator/juri dan
-`GOOGLE_API_KEY` (atau `GEMINI_API_KEY`) untuk embedding. Pastikan versi
-RAGAS dan LangChain yang terpasang kompatibel; jika import RAGAS gagal,
-buat ulang virtual environment lalu instal dependency dari file requirements.
+Evaluasi memerlukan `GROQ_API_KEY` untuk LLM generator/juri, `GOOGLE_API_KEY`
+(atau `GEMINI_API_KEY`) untuk embedding, serta dependency tambahan di
+`requirements-dev.txt` (RAGAS, pandas, datasets). Dependency tersebut sengaja
+tidak dipasang di image produksi agar container tetap ringan. Jika import
+RAGAS gagal, buat ulang virtual environment lalu instal ulang kedua file
+requirements.
 
-### 📈 Hasil Evaluasi Kuantitatif (Benchmark Aktual: `eval_report.csv`)
+### 📈 Hasil Evaluasi Kuantitatif (Benchmark Aktual: `eval_report_new.csv`)
 
 Evaluasi empiris dilakukan menggunakan framework **RAGAS** terhadap variasi pertanyaan hukum seputar ketentuan **PP No. 35 Tahun 2021** (PKWT, waktu kerja & lembur, legalitas alih daya, serta pesangon PHK).
 
@@ -232,24 +288,24 @@ Evaluasi empiris dilakukan menggunakan framework **RAGAS** terhadap variasi pert
 
 | Metrik RAGAS | Rata-rata Skor | Skala | Status | Keterangan / Analisis |
 | :--- | :---: | :---: | :---: | :--- |
-| **Context Precision** | **1.0000** | 0.0 - 1.0 | 🌟 Sempurna (100%) | Seluruh konteks dokumen hukum yang ditarik pipeline retrieval berada pada urutan teratas berkat kombinasi *Hybrid Search* (BM25 + ChromaDB) dan *Nemotron Re-ranking*. |
-| **Faithfulness** | **0.8933** | 0.0 - 1.0 | ✅ Sangat Baik (89.3%) | Menjamin anti-halusinasi: jawaban model berakar kuat pada teks pasal tanpa mengarang ketentuan hak pekerja atau formula kompensasi. |
-| **Context Recall** | **0.8333** | 0.0 - 1.0 | ✅ Baik (83.3%) | Retriever berhasil menemukan sebagian besar pasal rujukan yang diperlukan dari dokumen resmi regulasi. |
-| **Answer Relevancy** | **0.7899** | 0.0 - 1.0 | ✅ Baik (79.0%) | Jawaban yang dihasilkan langsung menjawab substansi masalah yang ditanyakan pengguna secara lugas dan terarah. |
+| **Context Precision** | **0.7778** | 0.0 - 1.0 | ✅ Baik (77.8%) | Sebagian besar konteks yang diprioritaskan relevan; masih ada ruang untuk meningkatkan pemilihan konteks pada pertanyaan alih daya dan pesangon. |
+| **Faithfulness** | **0.9375** | 0.0 - 1.0 | ✅ Sangat Baik (93.8%) | Jawaban yang berhasil dinilai tetap berakar kuat pada teks pasal dan guardrail menolak pertanyaan di luar korpus. |
+| **Context Recall** | **0.8000** | 0.0 - 1.0 | ✅ Baik (80.0%) | Retriever menemukan sebagian besar pasal rujukan yang diperlukan dari dokumen resmi regulasi. |
+| **Answer Relevancy** | **0.8082** | 0.0 - 1.0 | ✅ Baik (80.8%) | Jawaban yang dihasilkan umumnya langsung menjawab substansi pertanyaan pengguna. |
 
-> *Catatan: Rata-rata Faithfulness dihitung dari seluruh kasus uji valid (1 sampel berstatus NaN diabaikan sesuai standar kalkulasi metrik RAGAS).*
+> *Catatan: benchmark terbaru menjalankan 6 pertanyaan in-scope dan 1 pertanyaan out-of-scope. Faithfulness memiliki 2 nilai NaN dan Context Recall memiliki 1 nilai NaN; RAGAS mengabaikannya saat menghitung mean. Selama evaluasi juga terjadi satu rate limit Groq (429), tetapi `raise_exceptions=False` memungkinkan proses selesai. Karena konfigurasi retrieval dan model generator berubah, angka ini tidak boleh dibandingkan langsung dengan benchmark lama tanpa mengulang evaluasi pada kondisi yang sama.*
 
 #### 2. Rincian Metrik per Kasus Uji
 
 | No | Pertanyaan Regulasi | Faithfulness | Answer Relevancy | Context Precision | Context Recall | Rujukan Pasal Utama |
 | :---: | :--- | :---: | :---: | :---: | :---: | :--- |
-| 1 | Batas maksimal waktu kerja lembur dalam 1 hari dan 1 minggu | 0.8000 | 0.8051 | 1.0000 | 1.0000 | Pasal 26 ayat (1) |
-| 2 | Hak uang kompensasi pekerja PKWT saat kontrak berakhir | 1.0000 | 0.8264 | 1.0000 | 1.0000 | Pasal 15 ayat (1) & (2) |
-| 3 | Perhitungan kompensasi PKWT masa kerja 12 bulan terus menerus | 1.0000 | 0.8213 | 1.0000 | 1.0000 | Pasal 16 ayat (1) huruf a |
-| 4 | Batas jangka waktu maksimal keseluruhan kontrak PKWT | 1.0000 | 0.7766 | 1.0000 | 1.0000 | Pasal 8 ayat (1) |
-| 5 | Legalitas bentuk badan hukum perusahaan alih daya (*outsourcing*) | *N/A* <sup>*</sup> | 0.7456 | 1.0000 | 0.0000 <sup>*</sup> | Pasal 20 ayat (1) |
-| 6 | Besaran uang pesangon PHK masa kerja 3 s.d. < 4 tahun | 0.6667 | 0.7647 | 1.0000 | 1.0000 | Pasal 40 ayat (2) huruf d |
-| **—** | **Rata-rata (Benchmark Mean)** | **0.8933** | **0.7899** | **1.0000** | **0.8333** | — |
+| 1 | Batas maksimal waktu kerja lembur dalam 1 hari dan 1 minggu | 0.7500 | 0.8156 | 1.0000 | 1.0000 | Pasal 26 ayat (1) |
+| 2 | Hak uang kompensasi pekerja PKWT saat kontrak berakhir | *N/A* | 0.8232 | 1.0000 | 1.0000 | Pasal 15 ayat (1) & (2) |
+| 3 | Perhitungan kompensasi PKWT masa kerja 12 bulan terus menerus | *N/A* | 0.8330 | 0.8333 | 1.0000 | Pasal 16 ayat (1) huruf a |
+| 4 | Batas jangka waktu maksimal keseluruhan kontrak PKWT | 1.0000 | 0.8471 | 1.0000 | *N/A* | Pasal 8 ayat (1) |
+| 5 | Legalitas bentuk badan hukum perusahaan alih daya (*outsourcing*) | 1.0000 | 0.7897 | 0.3333 | 0.0000 | Pasal 20 ayat (1) |
+| 6 | Besaran uang pesangon PHK masa kerja 3 s.d. < 4 tahun | 1.0000 | 0.7404 | 0.5000 | 1.0000 | Pasal 40 ayat (2) huruf d |
+| **—** | **Rata-rata (Benchmark Mean)** | **0.9375** | **0.8082** | **0.7778** | **0.8000** | — |
 
 <sup>*</sup> *Pada pertanyaan nomor 5, sistem merujuk tepat pada bunyi resmi teks Pasal 20 ayat (1) PP 35/2021 ("berbentuk badan hukum"), mengoreksi asumsi ground truth lama yang mencantumkan syarat spesifik "perseroan terbatas".*  
 *Pertanyaan penolakan di luar dokumen regulasi (uji out-of-scope, e.g. pakan ikan lele) juga diuji dan berhasil ditolak oleh guardrail tanpa halusinasi.*
@@ -260,8 +316,16 @@ Evaluasi empiris dilakukan menggunakan framework **RAGAS** terhadap variasi pert
 
 ```bash
 docker build -t kawankerja-ai:latest .
-docker run -p 8000:8000 --env-file .env kawankerja-ai:latest
+docker run -p 8000:8000 --env-file .env \
+  -v "$(pwd)/chroma_db:/app/chroma_db" \
+  kawankerja-ai:latest
 ```
+
+Image tidak membangun ulang vector database saat build karena proses ingestion
+memerlukan API key dan kuota embedding. Jalankan `python scripts/ingest.py`
+di host lebih dulu (atau di dalam container sekali jalan) lalu mount folder
+`chroma_db` seperti contoh di atas. Tanpa volume tersebut, endpoint `/health`
+akan tetap hidup tetapi retrieval tidak menemukan dokumen.
 
 ---
 

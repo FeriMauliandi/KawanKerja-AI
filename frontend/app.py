@@ -79,10 +79,10 @@ with st.sidebar:
     st.markdown("### ⚙️ Spesifikasi Sistem:")
     st.markdown("""
     - **Arsitektur**: Decoupled Client-Server (Streamlit -> FastAPI)
-    - **LLM Generator**: `Qwen 3.8 27B` *(via Groq LPU)*
+    - **LLM Generator**: `GPT-OSS 20B` *(via Groq LPU, dapat diganti lewat `LLM_MODEL`)*
     - **Embedding**: `Gemini Embedding 1` *(via Google AI Studio)*
-    - **Reranker**: `NVIDIA Nemotron 3.5 Rerank 8B` *(via OpenRouter)*
-    - **Metode Pencarian**: Hybrid Search (BM25 + ChromaDB)
+    - **Reranker**: `Cohere Rerank 3.5` *(via OpenRouter, opsional, default off)*
+    - **Metode Pencarian**: Hybrid (BM25 + ChromaDB + Exact-Pasal + RRF)
     - **Conversational Memory**: Multi-Turn Query Reformulation
     - **Dasar Regulasi**: PP No. 35 Tahun 2021
     """)
