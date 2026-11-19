@@ -109,12 +109,6 @@ Korpus saat ini hanya **2 PDF, 101 chunk, dan 68 pasal unik**. Pada skala ini, m
 
 > Hit@5 sudah saturasi pada korpus kecil ini; metrik yang membedakan adalah MRR (posisi konteks relevan pertama). Hybrid RRF menaikkan MRR dari 0.854 menjadi 0.938 tanpa menambah latensi berarti. Reranker tidak menaikkan MRR dan menambah ~4.2 detik, sehingga default-nya dimatikan. Aktifkan dengan `RETRIEVAL_ENABLE_RERANKER=true` jika korpus bertambah besar.
 
-Reproduksi:
-
-```bash
-python scripts/eval_retrieval.py --no-rerank   # hybrid RRF saja
-python scripts/eval_retrieval.py               # termasuk reranker
-```
 
 ---
 
@@ -329,5 +323,4 @@ akan tetap hidup tetapi retrieval tidak menemukan dokumen.
 
 ---
 
-## 📄 Lisensi
-Didistribusikan di bawah lisensi MIT.
+
