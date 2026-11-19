@@ -981,7 +981,7 @@
         AppState.abortController = new AbortController();
 
         try {
-            const resp = await fetch(`${AppState.backendUrl}/api/chat`, {
+            const resp = await fetch(`${AppState.backendUrl}/api/chat/stream`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -996,21 +996,72 @@
                 throw new Error(`Status ${resp.status}: ${errDetail}`);
             }
 
-            const data = await resp.json();
             thinkingEl.remove();
 
-            const assistantMsg = {
+            if (!resp.body) throw new Error('Browser tidak mendukung response streaming.');
+
+            // Tampilkan bubble kosong terlebih dahulu, kemudian isi setiap
+            // token yang diterima dari SSE tanpa menunggu jawaban selesai.
+            const streamingMsg = {
                 role: 'assistant',
-                content: data.answer,
-                standalone: data.standalone_question,
+                content: '',
                 original_question: question,
-                sources: data.sources || [],
+                sources: [],
                 timestamp: new Date().toISOString()
             };
+            const messageIndex = session.messages.length;
+            appendMessageToUI(streamingMsg, messageIndex);
+            const streamingEl = DOM.chatContainer.querySelector(`[data-index="${messageIndex}"]`);
+            const markdownEl = streamingEl?.querySelector('.markdown-body');
 
-            session.messages.push(assistantMsg);
+            const reader = resp.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let finalData = null;
+
+            const processSSEBlock = (block) => {
+                let eventName = 'message';
+                let dataLine = '';
+                block.split(/\r?\n/).forEach(line => {
+                    if (line.startsWith('event:')) eventName = line.slice(6).trim();
+                    if (line.startsWith('data:')) dataLine += line.slice(5).trim();
+                });
+                if (!dataLine) return;
+                let data;
+                try { data = JSON.parse(dataLine); }
+                catch (err) { throw new Error('Format streaming dari server tidak valid.'); }
+
+                if (eventName === 'token') {
+                    streamingMsg.content += data.content || '';
+                    if (markdownEl) markdownEl.innerHTML = formatMarkdown(streamingMsg.content);
+                    scrollToBottom();
+                } else if (eventName === 'done') {
+                    finalData = data;
+                } else if (eventName === 'error') {
+                    throw new Error(data.message || 'Gagal menghasilkan jawaban.');
+                }
+            };
+
+            while (true) {
+                const { value, done } = await reader.read();
+                buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
+                const blocks = buffer.split(/\r?\n\r?\n/);
+                buffer = blocks.pop() || '';
+                blocks.filter(Boolean).forEach(processSSEBlock);
+                if (done) break;
+            }
+            if (buffer.trim()) processSSEBlock(buffer);
+
+            finalData = finalData || {};
+            streamingMsg.content = finalData.answer || streamingMsg.content;
+            streamingMsg.standalone = finalData.standalone_question;
+            streamingMsg.sources = finalData.sources || [];
+            // Render ulang sekali agar citation chips dan tombol memakai
+            // metadata final dari event `done`.
+            streamingEl?.remove();
+            session.messages.push(streamingMsg);
             saveSessions();
-            appendMessageToUI(assistantMsg, session.messages.length - 1);
+            appendMessageToUI(streamingMsg, session.messages.length - 1);
             scrollToBottom();
 
         } catch (err) {
